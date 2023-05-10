@@ -1,4 +1,4 @@
-# openLineage-openMetadata-transporter
+# openlineage-openmetadata-transporter
 This is an extension for the [OpenLineage](https://github.com/OpenLineage/OpenLineage) project, providing a custom transporter for integrating OpenLineage with OpenMetadata.
 To use 'openMetadata' transport type, make sure that you have openlineage-spark jar and OpenLineage_OpenMetadata_Transporter jar in your classpath.
 
