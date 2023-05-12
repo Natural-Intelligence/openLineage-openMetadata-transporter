@@ -1,1 +1,1 @@
-io.openlineage.client.transports.OpenMetadataTransportBuilder
+com.ni.openlineage.openmetadata.transport.OpenMetadataTransportBuilder

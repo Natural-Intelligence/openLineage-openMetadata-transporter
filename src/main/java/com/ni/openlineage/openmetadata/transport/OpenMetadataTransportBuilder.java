@@ -1,4 +1,8 @@
-package io.openlineage.client.transports;
+package com.ni.openlineage.openmetadata.transport;
+
+import io.openlineage.client.transports.Transport;
+import io.openlineage.client.transports.TransportBuilder;
+import io.openlineage.client.transports.TransportConfig;
 
 public class OpenMetadataTransportBuilder implements TransportBuilder {
     @Override

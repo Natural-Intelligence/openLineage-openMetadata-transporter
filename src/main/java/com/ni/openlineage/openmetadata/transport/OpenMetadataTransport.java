@@ -1,9 +1,11 @@
-package io.openlineage.client.transports;
+package com.ni.openlineage.openmetadata.transport;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openlineage.client.OpenLineage;
 import io.openlineage.client.OpenLineageClientException;
+import io.openlineage.client.transports.TokenProvider;
+import io.openlineage.client.transports.Transport;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;

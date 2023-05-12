@@ -1,5 +1,7 @@
-package io.openlineage.client.transports;
+package com.ni.openlineage.openmetadata.transport;
 
+import io.openlineage.client.transports.TokenProvider;
+import io.openlineage.client.transports.TransportConfig;
 import lombok.*;
 
 import javax.annotation.Nullable;
