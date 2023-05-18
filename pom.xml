@@ -83,7 +83,7 @@
 
 
     <scm>
-        <connection>scm:git:git@github.com:Natural-Intelligence/openLineage-openMetadata-transporter.git</connection>
+        <connection>scm:git:https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter.git</connection>
         <tag>1.0</tag>
     </scm>
 
