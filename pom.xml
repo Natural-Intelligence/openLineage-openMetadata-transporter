@@ -9,7 +9,21 @@
 
     <name>openlineage-openmetadata-transporter</name>
     <description>Transporter for integrating OpenLineage with OpenMetadata</description>
-
+    <profiles>
+        <profile>
+            <id>release</id>
+            <properties>
+                <s3ArtifactsDir>release</s3ArtifactsDir>
+                <gitCommitIdStr />
+            </properties>
+        </profile>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+	        </activation>
+        </profile>
+    </profiles>
     <build>
         <plugins>
             <plugin>
@@ -19,6 +33,22 @@
                     <source>8</source>
                     <target>8</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.scm</groupId>
+                        <artifactId>maven-scm-provider-gitexe</artifactId>
+                        <version>1.8.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.sonatype.plexus</groupId>
+                        <artifactId>plexus-sec-dispatcher</artifactId>
+                        <version>1.4</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
 <!--            <plugin>-->
@@ -36,6 +66,22 @@
         </plugins>
     </build>
 
+    <repositories>
+        <repository>
+            <id>ni-nexus-repository</id>
+            <url>http://nexus3-external.naturalint.com/repository/NI-MVN/</url>
+        </repository>
+
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>ni-nexus-repository</id>
+            <url>http://nexus3-external.naturalint.com/repository/MVN-local/</url>
+        </repository>
+    </distributionManagement>
+
+
     <scm>
         <connection>scm:git:git@github.com:Natural-Intelligence/openLineage-openMetadata-transporter.git</connection>
         <tag>HEAD</tag>
@@ -43,8 +89,9 @@
 
     <properties>
             <jacksonVersion>2.13.4</jacksonVersion>
-            <openLineageVersion>0.24.0-SNAPSHOT</openLineageVersion>
+            <openLineageVersion>0.25.0</openLineageVersion>
     </properties>
+
 
     <dependencies>
 
