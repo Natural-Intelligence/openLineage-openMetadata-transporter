@@ -4,7 +4,7 @@
 
     <groupId>com.naturalint</groupId>
     <artifactId>openlineage-openmetadata-transporter</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.8-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>openlineage-openmetadata-transporter</name>

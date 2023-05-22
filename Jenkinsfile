@@ -16,7 +16,6 @@ def d = new com.naturalint.datainfra()
 // Build command override, if non empty
 def buildCommand=""
 service = true
-def extraArgs = ["buildCommandOverride": "mvn test -Psource-config"]
 // this will Call the pipeline defined in the shared library repo
 // here: https://github.com/Natural-Intelligence/jenkins-shared-libraries
 
@@ -24,5 +23,5 @@ def extraArgs = ["buildCommandOverride": "mvn test -Psource-config"]
 // 1. either define DAG name here and pass it to the pipeline
 // 2. or put it in the airflow.properties file and read it in the stage triggering Airflow
 timestamps {
-    dataInfraPipeline(d, pod, svcName, tag, buildCommand, service, extraArgs)
+    dataInfraPipeline(d, pod, svcName, tag, buildCommand, service)
 }
