@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.naturalint</groupId>
@@ -13,14 +14,14 @@
             <id>release</id>
             <properties>
                 <s3ArtifactsDir>release</s3ArtifactsDir>
-                <gitCommitIdStr />
+                <gitCommitIdStr/>
             </properties>
         </profile>
         <profile>
             <id>default</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
-	        </activation>
+            </activation>
         </profile>
     </profiles>
     <build>
@@ -50,18 +51,41 @@
                 </dependencies>
             </plugin>
 
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-shade-plugin</artifactId>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <phase>package</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>shade</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>net.bytebuddy:byte-buddy</include>
+                                    <include>net.bytebuddy:byte-buddy-agent</include>
+                                </includes>
+                            </artifactSet>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <!--                <version>${maven-jar-plugin.version}</version>-->
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Premain-Class>
+                                com.ni.openlineage.openmetadata.agent.jdbc.OpenMetdataJdbcAgent
+                            </Premain-Class>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -71,6 +95,10 @@
             <url>http://nexus3-external.naturalint.com/repository/NI-MVN/</url>
         </repository>
 
+        <repository>
+            <id>redshift</id>
+            <url>http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release</url>
+        </repository>
     </repositories>
 
     <distributionManagement>
@@ -82,15 +110,17 @@
 
 
     <scm>
-        <connection>scm:git:https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter.git</connection>
+        <connection>scm:git:https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter.git
+        </connection>
         <tag>1.0</tag>
     </scm>
 
     <properties>
-            <jacksonVersion>2.13.4</jacksonVersion>
-            <openLineageVersion>0.25.0</openLineageVersion>
+        <jacksonVersion>2.13.4</jacksonVersion>
+        <openLineageVersion>0.25.0</openLineageVersion>
+        <spark.scala.version>2.12</spark.scala.version>
+        <spark.version>3.0.1</spark.version>
     </properties>
-
 
     <dependencies>
 
@@ -149,6 +179,43 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.12.1.GA</version>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.16</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.14.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <version>1.14.4</version>
+        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>org.apache.spark</groupId>-->
+<!--            <artifactId>spark-core_${spark.scala.version}</artifactId>-->
+<!--            <version>${spark.version}</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>com.amazon.redshift</groupId>-->
+<!--            <artifactId>redshift-jdbc42</artifactId>-->
+<!--            <version>1.2.10.1009</version>-->
+<!--        </dependency>-->
 
     </dependencies>
 

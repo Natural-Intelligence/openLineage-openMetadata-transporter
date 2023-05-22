@@ -143,7 +143,7 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     }
   }
 
-  private void sendToOpenMetadata(String tableName, LineageType lineageType) {
+  public void sendToOpenMetadata(String tableName, LineageType lineageType) {
     try {
       Set<String> tableIds = getTableIds(tableName);
 
@@ -154,6 +154,7 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
         if (lineageType.equals(LineageType.OUTLET)) {
           updateTableLastUpdateTime(tableId, tableName);
         }
+        log.error("### {} lineage was sent successfully to OpenMetadata for pipeline: {}, table: {}", lineageType, pipelineName, tableName);
         log.info("{} lineage was sent successfully to OpenMetadata for pipeline: {}, table: {}", lineageType, pipelineName, tableName);
       });
     } catch (Exception e) {
@@ -361,6 +362,9 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
 
   public String extractDbNameFromUrl(String url) {
     if (url != null) {
+      if (url.startsWith("redshift")) {
+        return "public";
+      }
       Pattern pattern = Pattern.compile("^[^:]+://[^/]+:[0-9]+/([^?]+)");
       Matcher matcher = pattern.matcher(url);
 
