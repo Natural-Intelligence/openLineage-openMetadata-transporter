@@ -7,6 +7,7 @@ import io.openlineage.sql.SqlMeta;
 import net.bytebuddy.asm.Advice;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -23,38 +24,39 @@ public class OpenMetadataJdbcLineageAdvice {
   @Advice.OnMethodExit
   public static void onExit(@Advice.This PreparedStatement statement) {
     try {
-      String sql = null;
       String dialect = extractDialect(statement);
-//      log.error("### dialect = " + dialect);
-      System.out.println("### dialect = " + dialect);
       if (dialect == null) {
         return;
       }
-      if (MYSQL.equals(dialect)) {
-        sql = ((com.mysql.cj.jdbc.ClientPreparedStatement) statement).getPreparedSql();
-      } else if (REDSHIFT.equals(dialect)) {
-        sql = extractSqlFromRedshiftConnection(statement);
-      }
-      System.out.println("### Executed SQL: " + sql);
+
+      String sql = extractSql(dialect, statement);
       if (sql == null) {
         return;
       }
 
-      String url = extractUrl(statement);
-      System.out.println("### url = " + url);
-
       Optional<SqlMeta> sqlMetaOpt = OpenLineageSql.parse(Collections.singletonList(sql), dialect);
       if (sqlMetaOpt.isPresent()) {
-        handleJdbcLineage(sqlMetaOpt.get(), url);
+        String url = extractUrl(statement);
+        System.out.println(String.format("Extracting lineage from %s jdbc query: %s", dialect, sql));
+        handleLineage(sqlMetaOpt.get(), url);
       }
-    } catch (Exception ex) {
-      System.out.println("Error occurred when when trying to extract lineage from JDBC query:" + ex.getMessage());
+    } catch (Throwable ex) {
+      System.out.println("Error occurred when trying to extract lineage from JDBC query: " + ex.getMessage());
     }
   }
 
+  public static String extractSqlFromMysqlConnection(PreparedStatement statement) {
+    String preparedSql = null;
+    try {
+      Method method = statement.getClass().getMethod("getPreparedSql");
+      preparedSql = (String) method.invoke(statement);
+    } catch (Exception e) {
+      System.out.println("Could not get sql query for redshift connection: " + e.getMessage());
+    }
+    return preparedSql;
+  }
+
   public static String extractSqlFromRedshiftConnection(PreparedStatement statement) {
-    System.out.println("### redshift connection");
-    System.out.println("### declared fields = " + statement.getClass().getDeclaredFields());
     Class<?> clazz = statement.getClass();
     Field m_preparedSqlField = null;
     while (clazz != null) {
@@ -67,7 +69,7 @@ public class OpenMetadataJdbcLineageAdvice {
     }
 
     if (m_preparedSqlField == null) {
-      System.out.println("### Field not found");
+      System.out.println("Could not find sql query for redshift connection");
       return null;
     }
 
@@ -75,17 +77,24 @@ public class OpenMetadataJdbcLineageAdvice {
       m_preparedSqlField.setAccessible(true);
       return (String) m_preparedSqlField.get(statement);
     } catch (IllegalAccessException e) {
-      System.out.println("### failed to get sql  = " + e.getMessage());
+      System.out.println("Could not get sql query for redshift connection");
       e.printStackTrace();
       return null;
     }
   }
 
-  public static void handleJdbcLineage(SqlMeta sqlMeta, String url) {
-    System.out.println("### sqlMeta results = " + sqlMeta);
+  public static String extractSql(String dialect, PreparedStatement statement) {
+    if (MYSQL.equals(dialect)) {
+      return extractSqlFromMysqlConnection(statement);
+    } else if (REDSHIFT.equals(dialect)) {
+      return extractSqlFromRedshiftConnection(statement);
+    }
+    return null;
+  }
+
+  public static void handleLineage(SqlMeta sqlMeta, String url) {
     OpenMetadataTransport openMetadataTransport = OpenMetdataJdbcAgent.getOpenMetadataTransport();
     String dbName = openMetadataTransport.extractDbNameFromUrl(url.replace("jdbc:", ""));
-    System.out.println("### created openMetadataTransport, dbname = " + dbName);
 
     if (sqlMeta.inTables() != null && !sqlMeta.inTables().isEmpty()) {
       transportLineageToOpenMetadata(OpenMetadataTransport.LineageType.INLET, sqlMeta.inTables(), dbName, openMetadataTransport);
@@ -104,17 +113,14 @@ public class OpenMetadataJdbcLineageAdvice {
           .orElseGet(() -> Optional.ofNullable(dbName)
               .map(db -> db + ".")
               .orElse("")) + table.name();
-      System.out.println("### Trying to send " + lineageType + " lineage to openmetadata for table:  " + fullTableName);
       openMetadataTransport.sendToOpenMetadata(fullTableName, lineageType);
     });
   }
 
   public static String extractDialect(PreparedStatement statement) {
-    System.out.println("### statement class = " + statement.getClass().getName() + ", simple name = " + statement.getClass().getSimpleName());
-    // TODO use consts
-    if (statement.getClass().getName().equals("com.amazon.redshift.core.jdbc42.PGJDBC42PreparedStatement")) {
+    if (statement.getClass().getName().contains(REDSHIFT)) {
       return REDSHIFT;
-    } else if (statement.getClass().getName().equals("com.mysql.cj.jdbc.ClientPreparedStatement")) {
+    } else if (statement.getClass().getName().contains(MYSQL)) {
       return MYSQL;
     }
     return null;

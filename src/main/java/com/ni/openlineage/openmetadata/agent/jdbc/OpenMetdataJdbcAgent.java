@@ -22,19 +22,16 @@ public class OpenMetdataJdbcAgent {
 
   private static OpenMetadataTransport openMetadataTransport;
   private static final String MYSQL_CLASS_NAME = "com.mysql.cj.jdbc.ClientPreparedStatement";
-  private static final String REDSHIFT_CLASS_NAME = "com.amazon.jdbc.common.SPreparedStatement"; // todo check if to replace with extension
+  private static final String REDSHIFT_CLASS_NAME = "com.amazon.jdbc.common.SPreparedStatement";
 
   public static void premain(String agentArgs, Instrumentation inst) {
 
     try {
-//    TODO check if can use logs in the advisor
-      log.error("### In premain!!! agentArgs = " + agentArgs);
-      System.out.println("### In premain!!! agentArgs = " + agentArgs);
       generateOpenMetadataTransport(agentArgs);
       buildAgent(inst, MYSQL_CLASS_NAME);
       buildAgent(inst, REDSHIFT_CLASS_NAME);
 
-    } catch (Exception e) {
+    } catch (Throwable e) {
       System.out.println("Failed to create jdbc query transformer");
     }
   }
@@ -42,8 +39,6 @@ public class OpenMetdataJdbcAgent {
   private static void generateOpenMetadataTransport(String agentArgs) throws Exception {
     try {
       Map<String, String> agentArgsMap = parseAgentArgs(agentArgs);
-      System.out.println("### agentArgsMap = " + agentArgsMap.toString());
-
       OpenMetadataConfig openMetadataConfig = new OpenMetadataConfig();
       ApiKeyTokenProvider apiKeyTokenProvider = new ApiKeyTokenProvider();
       apiKeyTokenProvider.setApiKey(agentArgsMap.get("transport.auth.apiKey"));

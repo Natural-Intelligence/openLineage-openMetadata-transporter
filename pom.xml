@@ -94,11 +94,6 @@
             <id>ni-nexus-repository</id>
             <url>http://nexus3-external.naturalint.com/repository/NI-MVN/</url>
         </repository>
-
-        <repository>
-            <id>redshift</id>
-            <url>http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release</url>
-        </repository>
     </repositories>
 
     <distributionManagement>
@@ -118,8 +113,6 @@
     <properties>
         <jacksonVersion>2.13.4</jacksonVersion>
         <openLineageVersion>0.25.0</openLineageVersion>
-        <spark.scala.version>2.12</spark.scala.version>
-        <spark.version>3.0.1</spark.version>
     </properties>
 
     <dependencies>
@@ -187,12 +180,6 @@
         </dependency>
 
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.16</version>
-        </dependency>
-
-        <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
             <version>1.14.4</version>
@@ -203,19 +190,6 @@
             <artifactId>byte-buddy-agent</artifactId>
             <version>1.14.4</version>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>org.apache.spark</groupId>-->
-<!--            <artifactId>spark-core_${spark.scala.version}</artifactId>-->
-<!--            <version>${spark.version}</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>com.amazon.redshift</groupId>-->
-<!--            <artifactId>redshift-jdbc42</artifactId>-->
-<!--            <version>1.2.10.1009</version>-->
-<!--        </dependency>-->
 
     </dependencies>
 
