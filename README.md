@@ -36,6 +36,8 @@ using the 'openMetadata' transport type.
 
 
 To use the java agent, include the openlineage-openmetadata-transporter jar in your class path and specify the jat file as a java agent, with the relevant transport configuration added as follows:
--javaagent:<path-to-openlineage-openmetadata-transporter-jar>=transport.airflowHost=http://my-airflow-staging,transport.auth.apiKey=myJwtToken,transport.pipelineName=my-pipeline,transport.pipelineUrl=/tree?dag_id=my-pipeline,transport.url=http://my-openMetadata-staging,transport.pipelineServiceName=my-airflow-staging'
 
+```
+-javaagent:<path-to-openlineage-openmetadata-transporter-jar>=transport.airflowHost=http://my-airflow-staging,transport.auth.apiKey=myJwtToken,transport.pipelineName=my-pipeline,transport.pipelineUrl=/tree?dag_id=my-pipeline,transport.url=http://my-openMetadata-staging,transport.pipelineServiceName=my-airflow-staging'
+```
 

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +44,7 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
   private final URI uri;
   private final String pipelineServiceName;
   private final String pipelineName;
-  private final String airflowHost;
+  private final String pipelineServiceUrl;
   private @Nullable
   final TokenProvider tokenProvider;
   private @Nullable
@@ -85,9 +86,9 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     this.uri = openMetadataConfig.getUrl();
     this.tokenProvider = openMetadataConfig.getAuth();
     this.pipelineName = openMetadataConfig.getPipelineName();
-    this.pipelineServiceName = openMetadataConfig.getPipelineServiceName();
-    this.airflowHost = openMetadataConfig.getAirflowHost();
-    this.pipelineUrl = openMetadataConfig.getPipelineUrl();
+    this.pipelineServiceUrl = openMetadataConfig.getPipelineServiceUrl();
+    this.pipelineServiceName = getServerName(this.pipelineServiceUrl);
+    this.pipelineUrl = "/tree?dag_id=" + this.pipelineName;
     this.pipelineDescription = openMetadataConfig.getPipelineDescription();
   }
 
@@ -154,8 +155,9 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
         if (lineageType.equals(LineageType.OUTLET)) {
           updateTableLastUpdateTime(tableId, tableName);
         }
-        log.error("### {} lineage was sent successfully to OpenMetadata for pipeline: {}, table: {}", lineageType, pipelineName, tableName);
         log.info("{} lineage was sent successfully to OpenMetadata for pipeline: {}, table: {}", lineageType, pipelineName, tableName);
+        System.out.println(String.format("%s lineage was sent successfully to OpenMetadata for pipeline: %s, table: %s",
+            lineageType, pipelineName, tableName));
       });
     } catch (Exception e) {
       log.error("Failed to send {} lineage to OpenMetadata for table {} pipeline {} due to: {}", lineageType, tableName, pipelineName, e.getMessage(), e);
@@ -273,14 +275,14 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
       String url = this.uri + "/api/v1/tables/" + tableId;
       String currentTime = LocalDateTime.now() + " UTC";
       String jsonPatchPayload = "[" +
-                " {" +
-                "    \"op\": \"add\"," +
-                "    \"path\": \"/extension\"," +
-                "    \"value\": {" +
-                "      \"lastUpdateTime\": \"" +  currentTime + "\"" +
-                "    }" +
-                "  }" +
-                "]";
+          " {" +
+          "    \"op\": \"add\"," +
+          "    \"path\": \"/extension\"," +
+          "    \"value\": {" +
+          "      \"lastUpdateTime\": \"" + currentTime + "\"" +
+          "    }" +
+          "  }" +
+          "]";
       createPatchRequest(url, jsonPatchPayload);
     } catch (Exception e) {
       log.error("Failed to update last update time in OpenMetadata for table {} due to error: {}", tableName, e.getMessage(), e);
@@ -288,21 +290,21 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
   }
 
   public void createPatchRequest(String url, String jsonPayload) throws Exception {
-      HttpClient client = HttpClientBuilder.create().build();
-      HttpPatch patchRequest = new HttpPatch(url);
+    HttpClient client = HttpClientBuilder.create().build();
+    HttpPatch patchRequest = new HttpPatch(url);
 
-      patchRequest.setHeader(CONTENT_TYPE, "application/json-patch+json");
-      if (tokenProvider != null) {
-        patchRequest.setHeader(AUTHORIZATION, tokenProvider.getToken());
-      }
-      patchRequest.setEntity(new StringEntity(jsonPayload));
+    patchRequest.setHeader(CONTENT_TYPE, "application/json-patch+json");
+    if (tokenProvider != null) {
+      patchRequest.setHeader(AUTHORIZATION, tokenProvider.getToken());
+    }
+    patchRequest.setEntity(new StringEntity(jsonPayload));
 
-      HttpResponse response = client.execute(patchRequest);
-      int statusCode = response.getStatusLine().getStatusCode();
-      String jsonResponse = EntityUtils.toString(response.getEntity());
-      if (statusCode != 200) {
-        throw new Exception("Patch request to OpenMetadata failed with status " +  statusCode + ": " + jsonResponse);
-      }
+    HttpResponse response = client.execute(patchRequest);
+    int statusCode = response.getStatusLine().getStatusCode();
+    String jsonResponse = EntityUtils.toString(response.getEntity());
+    if (statusCode != 200) {
+      throw new Exception("Patch request to OpenMetadata failed with status " + statusCode + ": " + jsonResponse);
+    }
   }
 
   private HttpRequestBase createHttpRequest(Supplier<HttpRequestBase> supplier, String path,
@@ -324,6 +326,22 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     return request;
   }
 
+  private static String getServerName(String pipelineServiceUrl) {
+    try {
+      URL url = new URL(pipelineServiceUrl);
+      String host = url.getHost();
+      int firstDot = host.indexOf('.');
+      if (firstDot > 0) {
+        return host.substring(0, firstDot);
+      } else {
+        return host;
+      }
+    } catch (Exception e) {
+      log.error("Failed to extract hostname from url {}", pipelineServiceUrl);
+    }
+    return null;
+  }
+
   public HttpPut createPipelineServiceRequest() throws Exception {
     Map requestMap = new HashMap<>();
     requestMap.put("name", pipelineServiceName);
@@ -332,7 +350,7 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     Map connectionConfig = new HashMap<>();
     connectionConfig.put("config", new HashMap<String, String>() {{
       put("type", "Airflow");
-      put("hostPort", airflowHost);
+      put("hostPort", pipelineServiceUrl);
     }});
     requestMap.put("connection", connectionConfig);
     String jsonRequest = toJsonString(requestMap);

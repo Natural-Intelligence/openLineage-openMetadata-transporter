@@ -43,11 +43,9 @@ public class OpenMetdataJdbcAgent {
       ApiKeyTokenProvider apiKeyTokenProvider = new ApiKeyTokenProvider();
       apiKeyTokenProvider.setApiKey(agentArgsMap.get("transport.auth.apiKey"));
       openMetadataConfig.setAuth(apiKeyTokenProvider);
-      openMetadataConfig.setAirflowHost(agentArgsMap.get("transport.airflowHost"));
+      openMetadataConfig.setPipelineServiceUrl(agentArgsMap.get("transport.pipelineServiceUrl"));
       openMetadataConfig.setPipelineName(agentArgsMap.get("transport.pipelineName"));
-      openMetadataConfig.setPipelineUrl(agentArgsMap.get("transport.pipelineUrl"));
       openMetadataConfig.setUrl(new URI(agentArgsMap.get("transport.url")));
-      openMetadataConfig.setPipelineServiceName(agentArgsMap.get("transport.pipelineServiceName"));
       openMetadataTransport = (OpenMetadataTransport) new OpenMetadataTransportBuilder().build(openMetadataConfig);
     } catch (Exception e) {
       System.out.println("Unable to parse open lineage endpoint. Lineage events will not be collected due to " + e.getMessage());

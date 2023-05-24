@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-//@Slf4j
 public class OpenMetadataJdbcLineageAdvice {
 
   private static final String REDSHIFT = "redshift";
