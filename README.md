@@ -5,27 +5,24 @@ To use 'openMetadata' transport type, make sure that you have openlineage-spark 
 
 
 Lineage collected by OpenLineage will be transmitted to OpenMetadata through APIs, including:
-1. Create/update pipeline service.
+1. Create/update pipeline service (Airflow is assumed).
 2. Create/update pipeline.
-3. Create/update lineage edge, connecting the inlet/outlet tables collected by OpenLineage to the pipeline in transport configuration.
+3. Create/update lineage edge, connecting the inlet/outlet tables collected by OpenLineage to the pipeline in transport configuration. It is assumed that the table already exists in OpenMetadata, otherwise it will not be created.
 4. Update custom property "lastUpdateTime" for output tables.
 
-Note: lineage will be reported only for tables that already exist in OpenMetadata metadata store.
 
 Using the 'openMetadata' transport type requires adding the following spark configuration parameters:
 
-| Parameter                                    | Definition                                                                                    | Example                                    |
-----------------------------------------------|-----------------------------------------------------------------------------------------------|--------------------------------------------
-| spark.openlineage.transport.type             | The transport type used for event emit. Set to `openMetadata` to use OpenMetadata transport.  | openMetadata                               |
-| spark.openlineage.transport.auth.type      | Authentication type when sending events to the OpenMetadata server                            | api_key                                    |
-| spark.openlineage.transport.auth.apiKey      | An API key to be used when sending events to the OpenMetadata server                          | abcdefghijk                                |
-| spark.openlineage.transport.timeout          | Timeout for sending OpenLineage info in seconds. Default is 5 seconds.                        | 30                                         |
-| spark.openlineage.transport.url              | The url of the OpenMetadata API server where events should be reported                        | http://my-openMetadata-staging             |
-| spark.openlineage.transport.pipelineServiceName              | Airflow pipeline service name, as defined in OpenMetadata. Will be created if it doesn't exist. | my-airflow-staging |
-| spark.openlineage.transport.pipelineUrl              | The pipeline's url in Airflow, as defined in OpenMetadata. Will be created if it doesn't exist. | http://my-airflow-staging/tree?dag_id=my-etl |
-| spark.openlineage.transport.pipelineName              | The pipeline's name, as defined in OpenMetadata. Will be created if it doesn't exist.         | my-etl                                     |
-| spark.openlineage.transport.airflowHost              | Airflow uri.                                                                                  | http://my-airflow-staging                  |
-| spark.openlineage.transport.pipelineDescription      | Optional pipeline description. | This is my ETL                          |
+| Parameter                                       | Definition                                                                                   | Example                     |
+-------------------------------------------------|----------------------------------------------------------------------------------------------|-----------------------------
+| spark.openlineage.transport.type                | The transport type used for event emit. Set to `openMetadata` to use OpenMetadata transport. | openMetadata                |
+| spark.openlineage.transport.auth.type           | Authentication type when sending events to the OpenMetadata server                           | api_key                     |
+| spark.openlineage.transport.auth.apiKey         | An API key to be used when sending events to the OpenMetadata server                         | abcdefghijk                 |
+| spark.openlineage.transport.timeout             | Optional timeout for sending OpenLineage info in seconds. Default is 5 seconds.              | 30                          |
+| spark.openlineage.transport.url                 | The url of the OpenMetadata API server where events should be reported                       | http://my-openMetadata-host |
+| spark.openlineage.transport.pipelineName        | The pipeline's name. Will be created in OpenMetadata if it doesn't exist.                    | my-pipeline                 |
+| spark.openlineage.transport.pipelineServiceUrl  | The pipeline service (Airflow) url.                                                          | http://my-airflow-host      |
+| spark.openlineage.transport.pipelineDescription | Optional pipeline description.                                                               | This is my ETL              |
 
 
 ## Extracting lineage from JDBC queries using java agent
@@ -35,9 +32,14 @@ The project provides a java agent that intercepts the JDBC queries as they are e
 using the 'openMetadata' transport type.
 
 
-To use the java agent, include the openlineage-openmetadata-transporter jar in your class path and specify the jat file as a java agent, with the relevant transport configuration added as follows:
+To use the java agent, include the openlineage-openmetadata-transporter jar in your class path and specify the jar file as a java agent, with the relevant transport configuration added as follows:
 
 ```
--javaagent:<path-to-openlineage-openmetadata-transporter-jar>=transport.airflowHost=http://my-airflow-staging,transport.auth.apiKey=myJwtToken,transport.pipelineName=my-pipeline,transport.pipelineUrl=/tree?dag_id=my-pipeline,transport.url=http://my-openMetadata-staging,transport.pipelineServiceName=my-airflow-staging'
+-javaagent:/path/to/openlineage-openmetadata-transporter-jar=transport.pipelineServiceUrl=http://my-airflow-host,transport.auth.apiKey=myJwtToken,transport.pipelineName=my-pipeline,transport.url=http://my-openMetadata-host'
 ```
 
+Note: when using the java agent on spark application, you should attach the agent jar to the driver JVM only, e.g.:
+
+```
+spark-submit --class path.to.myClass --conf spark.driver.extraJavaOptions=-javaagent:/path/to/openlineage-openmetadata-transporter-jar=transport.pipelineServiceUrl=http://my-airflow-host,... /path/to/my/applicationJar
+```

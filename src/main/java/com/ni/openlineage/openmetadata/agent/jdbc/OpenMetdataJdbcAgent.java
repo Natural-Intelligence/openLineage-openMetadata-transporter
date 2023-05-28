@@ -28,8 +28,8 @@ public class OpenMetdataJdbcAgent {
 
     try {
       generateOpenMetadataTransport(agentArgs);
-      buildAgent(inst, MYSQL_CLASS_NAME);
-      buildAgent(inst, REDSHIFT_CLASS_NAME);
+      attachJdbcLineageAdvice(inst, MYSQL_CLASS_NAME);
+      attachJdbcLineageAdvice(inst, REDSHIFT_CLASS_NAME);
 
     } catch (Throwable e) {
       System.out.println("Failed to create jdbc query transformer");
@@ -68,11 +68,16 @@ public class OpenMetdataJdbcAgent {
     return openMetadataTransport;
   }
 
-  private static void buildAgent(Instrumentation inst, String className) {
+  private static void attachJdbcLineageAdvice(Instrumentation inst, String className) {
     new AgentBuilder.Default()
         .type(named(className))
         .transform((builder, typeDescription, classLoader, javaModule, protectionDomain) ->
-            builder.method(named("executeUpdate"))
+            builder
+                .method(named("executeUpdate"))
+                .intercept(Advice.to(OpenMetadataJdbcLineageAdvice.class))
+                .method(named("executeQuery"))
+                .intercept(Advice.to(OpenMetadataJdbcLineageAdvice.class))
+                .method(named("execute"))
                 .intercept(Advice.to(OpenMetadataJdbcLineageAdvice.class))
         ).installOn(inst);
   }

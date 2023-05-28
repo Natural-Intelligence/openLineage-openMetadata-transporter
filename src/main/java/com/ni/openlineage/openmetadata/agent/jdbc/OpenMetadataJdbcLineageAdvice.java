@@ -44,6 +44,21 @@ public class OpenMetadataJdbcLineageAdvice {
     }
   }
 
+  public static String extractDialect(PreparedStatement statement) {
+    if (statement.getClass().getName().contains(REDSHIFT)) {
+      return REDSHIFT;
+    } else if (statement.getClass().getName().contains(MYSQL)) {
+      return MYSQL;
+    }
+    return null;
+  }
+
+  public static String extractUrl(PreparedStatement statement) throws Exception {
+    Connection conn = statement.getConnection();
+    DatabaseMetaData metaData = conn.getMetaData();
+    return metaData.getURL();
+  }
+
   public static String extractSqlFromMysqlConnection(PreparedStatement statement) {
     String preparedSql = null;
     try {
@@ -53,6 +68,15 @@ public class OpenMetadataJdbcLineageAdvice {
       System.out.println("Could not get sql query for redshift connection: " + e.getMessage());
     }
     return preparedSql;
+  }
+
+  public static String extractSql(String dialect, PreparedStatement statement) {
+    if (MYSQL.equals(dialect)) {
+      return extractSqlFromMysqlConnection(statement);
+    } else if (REDSHIFT.equals(dialect)) {
+      return extractSqlFromRedshiftConnection(statement);
+    }
+    return null;
   }
 
   public static String extractSqlFromRedshiftConnection(PreparedStatement statement) {
@@ -82,15 +106,6 @@ public class OpenMetadataJdbcLineageAdvice {
     }
   }
 
-  public static String extractSql(String dialect, PreparedStatement statement) {
-    if (MYSQL.equals(dialect)) {
-      return extractSqlFromMysqlConnection(statement);
-    } else if (REDSHIFT.equals(dialect)) {
-      return extractSqlFromRedshiftConnection(statement);
-    }
-    return null;
-  }
-
   public static void handleLineage(SqlMeta sqlMeta, String url) {
     OpenMetadataTransport openMetadataTransport = OpenMetdataJdbcAgent.getOpenMetadataTransport();
     String dbName = openMetadataTransport.extractDbNameFromUrl(url.replace("jdbc:", ""));
@@ -114,21 +129,6 @@ public class OpenMetadataJdbcLineageAdvice {
               .orElse("")) + table.name();
       openMetadataTransport.sendToOpenMetadata(fullTableName, lineageType);
     });
-  }
-
-  public static String extractDialect(PreparedStatement statement) {
-    if (statement.getClass().getName().contains(REDSHIFT)) {
-      return REDSHIFT;
-    } else if (statement.getClass().getName().contains(MYSQL)) {
-      return MYSQL;
-    }
-    return null;
-  }
-
-  public static String extractUrl(PreparedStatement statement) throws Exception {
-    Connection conn = statement.getConnection();
-    DatabaseMetaData metaData = conn.getMetaData();
-    return metaData.getURL();
   }
 }
 

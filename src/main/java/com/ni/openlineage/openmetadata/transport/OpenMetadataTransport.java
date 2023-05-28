@@ -53,6 +53,7 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
   final String pipelineDescription;
 
   private final Map<LineageType, Set<String>> tableNamesCache = new ConcurrentHashMap<>();
+  private final static String LAST_UPDATE_TIME = "lastUpdateTime";
 
   public enum LineageType {
     OUTLET,
@@ -92,26 +93,6 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     this.pipelineDescription = openMetadataConfig.getPipelineDescription();
   }
 
-  private Set<String> getTableNames(List<? extends OpenLineage.Dataset> datasets, LineageType lineageType) {
-    if (datasets == null) {
-      return Collections.emptySet();
-    }
-    Set<String> tableNames = extractTableNamesFromSymlinks(datasets);
-
-    // Handle table names from JDBC queries that don't have symlinks
-    if (tableNames.isEmpty()) {
-      tableNames = extractTableNamesFromDataSet(datasets);
-    }
-
-    tableNamesCache.putIfAbsent(lineageType, new HashSet<>());
-    Set<String> filteredTableNames = tableNames.stream().filter(t -> !tableNamesCache.get(lineageType).contains(t)).collect(Collectors.toSet());
-    tableNamesCache.computeIfPresent(lineageType, (k, v) -> {
-      v.addAll(filteredTableNames);
-      return v;
-    });
-    return filteredTableNames;
-  }
-
   @Override
   public void emit(@NonNull OpenLineage.RunEvent runEvent) {
     try {
@@ -133,15 +114,53 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     }
   }
 
-  private void throwOnHttpError(@NonNull HttpResponse response) throws IOException {
-    final int code = response.getStatusLine().getStatusCode();
-    if (code >= 400 && code < 600) { // non-2xx
-      String message =
-          String.format(
-              "code: %d, response: %s", code, EntityUtils.toString(response.getEntity(), UTF_8));
-
-      throw new OpenLineageClientException(message);
+  private Set<String> getTableNames(List<? extends OpenLineage.Dataset> datasets, LineageType lineageType) {
+    if (datasets == null) {
+      return Collections.emptySet();
     }
+    Set<String> tableNames = extractTableNamesFromSymlinks(datasets);
+
+    // Handle table names from JDBC queries that don't have symlinks
+    if (tableNames.isEmpty()) {
+      tableNames = extractTableNamesFromDataSet(datasets);
+    }
+
+    tableNamesCache.putIfAbsent(lineageType, new HashSet<>());
+    Set<String> filteredTableNames = tableNames.stream().filter(t -> !tableNamesCache.get(lineageType).contains(t)).collect(Collectors.toSet());
+    tableNamesCache.computeIfPresent(lineageType, (k, v) -> {
+      v.addAll(filteredTableNames);
+      return v;
+    });
+    return filteredTableNames;
+  }
+
+  private Set<String> extractTableNamesFromSymlinks(List<? extends OpenLineage.Dataset> datasets) {
+    return datasets.stream().filter(d -> d.getFacets() != null && d.getFacets().getSymlinks() != null &&
+            d.getFacets().getSymlinks().getIdentifiers() != null)
+        .flatMap(d -> d.getFacets().getSymlinks().getIdentifiers().stream())
+        .map(i -> i.getName())
+        .filter(Objects::nonNull)
+        .collect(Collectors.toSet());
+  }
+
+  private Set<String> extractTableNamesFromDataSet(List<? extends OpenLineage.Dataset> datasets) {
+    return datasets.stream()
+        .filter(d -> d != null && d.getName() != null && d.getNamespace() != null)
+        .map(d -> generateTableName(d.getName(), d.getNamespace()))
+        .filter(Objects::nonNull)
+        .collect(Collectors.toSet());
+  }
+
+  private String generateTableName(String name, String namespace) {
+    if (name.contains(".")) {
+      return name;
+    } else {
+      String dbName = extractDbNameFromUrl(namespace);
+      if (dbName != null) {
+        return dbName + "." + name;
+      }
+    }
+    return null;
   }
 
   public void sendToOpenMetadata(String tableName, LineageType lineageType) {
@@ -164,14 +183,6 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     }
   }
 
-  private Map sendRequest(HttpRequestBase request) throws IOException {
-    try (CloseableHttpResponse response = http.execute(request)) {
-      throwOnHttpError(response);
-      String jsonResponse = EntityUtils.toString(response.getEntity());
-      return fromJsonString(jsonResponse);
-    }
-  }
-
   private Set<String> getTableIds(String tableName) {
     try {
       HttpGet request = createGetTableRequest(tableName);
@@ -189,6 +200,14 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
       log.error("Failed to get id of table {} from OpenMetadata: ", tableName, e);
       throw new OpenLineageClientException(e);
     }
+  }
+
+  public HttpGet createGetTableRequest(String tableName) throws Exception {
+    String path = "api/v1/search/query";
+    Map<String, String> queryParams = new HashMap<>();
+    queryParams.put("size", "10");
+    queryParams.put("q", "fullyQualifiedName:*" + tableName);
+    return createGetRequest(path, queryParams);
   }
 
   private String createOrUpdatePipelineService() {
@@ -220,6 +239,91 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     } catch (Exception e) {
       log.error("Failed to create/update lineage in OpenMetadata for pipeline id {} and tableId {}: ", pipelineId, tableId, e);
       throw new OpenLineageClientException(e);
+    }
+  }
+
+  private boolean isLastUpdateTimeCustomPropertyExists() throws Exception {
+    String path = "api/v1/metadata/types/name/table";
+    Map<String, String> queryParams = new HashMap<>();
+    queryParams.put("fields", "customProperties");
+    HttpGet request = createGetRequest(path, queryParams);
+    Map<String, Object> response = (Map<String, Object>) sendRequest(request);
+    List<Map<String, Object>> customProperties = (List<Map<String, Object>>) response.get("customProperties");
+    if (customProperties.stream().filter(c -> c.get("name").equals(LAST_UPDATE_TIME)).count() > 0) {
+      return true;
+    }
+    return false;
+  }
+
+  private void createLastUpdateTimeCustomProperty() throws Exception {
+    String tableEntityId = getTableEntityId();
+    String stringTypeId = getStringTypeId();
+    HttpPut request = createLastUpdateTimeCustomPropertyRequest(tableEntityId, stringTypeId);
+    sendRequest(request);
+  }
+
+  private String getTableEntityId() throws Exception {
+    String path = "api/v1/metadata/types/name/table";
+    HttpGet request = createGetRequest(path, null);
+    Map<String, Object> response = (Map<String, Object>) sendRequest(request);
+    return response.get("id").toString();
+  }
+
+  private String getStringTypeId() throws Exception {
+    String path = "api/v1/metadata/types";
+    Map<String, String> queryParams = new HashMap<>();
+    queryParams.put("category", "field");
+    HttpGet request = createGetRequest(path, queryParams);
+    Map<String, Object> response = (Map<String, Object>) sendRequest(request);
+    List<Map<String, Object>> dataTypes = (List<Map<String, Object>>) response.get("data");
+    return dataTypes.stream().filter(d -> d.get("name").equals("string")).findFirst().map(d -> d.get("id").toString()).orElse(null);
+  }
+
+  public HttpPut createLastUpdateTimeCustomPropertyRequest(String tableEntityId, String stringTypeId) throws Exception {
+    Map requestMap = new HashMap<>();
+    requestMap.put("description", "Table's last update time");
+    requestMap.put("name", LAST_UPDATE_TIME);
+
+    Map propertyTypeMap = new HashMap<>();
+    propertyTypeMap.put("id", stringTypeId);
+    propertyTypeMap.put("type", "string");
+
+    requestMap.put("propertyType", propertyTypeMap);
+    String jsonRequest = toJsonString(requestMap);
+    return createPutRequest("/api/v1/metadata/types/" + tableEntityId, jsonRequest);
+  }
+
+  private void updateTableLastUpdateTime(String tableId, String tableName) {
+    try {
+      if (!isLastUpdateTimeCustomPropertyExists()) {
+        createLastUpdateTimeCustomProperty();
+      }
+      sendUpdateTableLastUpdateTimeRequest(tableId, tableName);
+    } catch (Exception e) {
+      log.error("Failed to update last update time in OpenMetadata for table {} due to error: {}", tableName, e.getMessage(), e);
+    }
+  }
+
+  private void sendUpdateTableLastUpdateTimeRequest(String tableId, String tableName) throws Exception {
+    String url = this.uri + "/api/v1/tables/" + tableId;
+    String currentTime = LocalDateTime.now() + " UTC";
+    String jsonPatchPayload = "[" +
+        " {" +
+        "    \"op\": \"add\"," +
+        "    \"path\": \"/extension\"," +
+        "    \"value\": {" +
+        "      \"" + LAST_UPDATE_TIME + "\": \"" + currentTime + "\"" +
+        "    }" +
+        "  }" +
+        "]";
+    createPatchRequest(url, jsonPatchPayload);
+  }
+
+  private Map sendRequest(HttpRequestBase request) throws IOException {
+    try (CloseableHttpResponse response = http.execute(request)) {
+      throwOnHttpError(response);
+      String jsonResponse = EntityUtils.toString(response.getEntity());
+      return fromJsonString(jsonResponse);
     }
   }
 
@@ -268,25 +372,6 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     HttpPut request = (HttpPut) createHttpRequest(HttpPut::new, path, null);
     request.setEntity(new StringEntity(jsonRequest, APPLICATION_JSON));
     return request;
-  }
-
-  private void updateTableLastUpdateTime(String tableId, String tableName) {
-    try {
-      String url = this.uri + "/api/v1/tables/" + tableId;
-      String currentTime = LocalDateTime.now() + " UTC";
-      String jsonPatchPayload = "[" +
-          " {" +
-          "    \"op\": \"add\"," +
-          "    \"path\": \"/extension\"," +
-          "    \"value\": {" +
-          "      \"lastUpdateTime\": \"" + currentTime + "\"" +
-          "    }" +
-          "  }" +
-          "]";
-      createPatchRequest(url, jsonPatchPayload);
-    } catch (Exception e) {
-      log.error("Failed to update last update time in OpenMetadata for table {} due to error: {}", tableName, e.getMessage(), e);
-    }
   }
 
   public void createPatchRequest(String url, String jsonPayload) throws Exception {
@@ -370,14 +455,6 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     return createPutRequest("/api/v1/pipelines", jsonRequest);
   }
 
-  public HttpGet createGetTableRequest(String tableName) throws Exception {
-    String path = "api/v1/search/query";
-    Map<String, String> queryParams = new HashMap<>();
-    queryParams.put("size", "10");
-    queryParams.put("q", "fullyQualifiedName:*" + tableName);
-    return createGetRequest(path, queryParams);
-  }
-
   public String extractDbNameFromUrl(String url) {
     if (url != null) {
       if (url.startsWith("redshift")) {
@@ -400,32 +477,14 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     http.close();
   }
 
-  private Set<String> extractTableNamesFromSymlinks(List<? extends OpenLineage.Dataset> datasets) {
-    return datasets.stream().filter(d -> d.getFacets() != null && d.getFacets().getSymlinks() != null &&
-            d.getFacets().getSymlinks().getIdentifiers() != null)
-        .flatMap(d -> d.getFacets().getSymlinks().getIdentifiers().stream())
-        .map(i -> i.getName())
-        .filter(Objects::nonNull)
-        .collect(Collectors.toSet());
-  }
+  private void throwOnHttpError(@NonNull HttpResponse response) throws IOException {
+    final int code = response.getStatusLine().getStatusCode();
+    if (code >= 400 && code < 600) { // non-2xx
+      String message =
+          String.format(
+              "code: %d, response: %s", code, EntityUtils.toString(response.getEntity(), UTF_8));
 
-  private Set<String> extractTableNamesFromDataSet(List<? extends OpenLineage.Dataset> datasets) {
-    return datasets.stream()
-        .filter(d -> d != null && d.getName() != null && d.getNamespace() != null)
-        .map(d -> generateTableName(d.getName(), d.getNamespace()))
-        .filter(Objects::nonNull)
-        .collect(Collectors.toSet());
-  }
-
-  private String generateTableName(String name, String namespace) {
-    if (name.contains(".")) {
-      return name;
-    } else {
-      String dbName = extractDbNameFromUrl(namespace);
-      if (dbName != null) {
-        return dbName + "." + name;
-      }
+      throw new OpenLineageClientException(message);
     }
-    return null;
   }
 }
