@@ -35,11 +35,11 @@ using the 'openMetadata' transport type.
 To use the java agent, include the openlineage-openmetadata-transporter jar in your class path and specify the jar file as a java agent, with the relevant transport configuration added as follows:
 
 ```
--javaagent:/path/to/openlineage-openmetadata-transporter-jar=transport.pipelineServiceUrl=http://my-airflow-host,transport.auth.apiKey=myJwtToken,transport.pipelineName=my-pipeline,transport.url=http://my-openMetadata-host'
+-javaagent:/path/to/openlineage-openmetadata-transporter.jar=transport.pipelineServiceUrl=http://my-airflow-host,transport.auth.apiKey=myJwtToken,transport.pipelineName=my-pipeline,transport.url=http://my-openMetadata-host'
 ```
 
 Note: when using the java agent on spark application, you should attach the agent jar to the driver JVM only, e.g.:
 
 ```
-spark-submit --class path.to.myClass --conf spark.driver.extraJavaOptions=-javaagent:/path/to/openlineage-openmetadata-transporter-jar=transport.pipelineServiceUrl=http://my-airflow-host,... /path/to/my/applicationJar
+spark-submit --class path.to.myClass --conf spark.driver.extraJavaOptions=-javaagent:/path/to/openlineage-openmetadata-transporter.jar=transport.pipelineServiceUrl=http://my-airflow-host,... /path/to/my/applicationJar
 ```
