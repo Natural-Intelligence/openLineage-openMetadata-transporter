@@ -168,8 +168,8 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
       Set<String> tableIds = getTableIds(tableName);
 
       tableIds.forEach(tableId -> {
-        String pipelineServiceId = createOrUpdatePipelineService();
-        String pipelineId = createOrUpdatePipeline(pipelineServiceId);
+        createOrUpdatePipelineService();
+        String pipelineId = createOrUpdatePipeline();
         createOrUpdateLineage(pipelineId, tableId, lineageType);
         if (lineageType.equals(LineageType.OUTLET)) {
           updateTableLastUpdateTime(tableId, tableName);
@@ -221,9 +221,9 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     }
   }
 
-  private String createOrUpdatePipeline(String pipelineServiceId) {
+  private String createOrUpdatePipeline() {
     try {
-      HttpPut request = createPipelineRequest(pipelineServiceId);
+      HttpPut request = createPipelineRequest();
       Map response = sendRequest(request);
       return response.get("id").toString();
     } catch (Exception e) {
@@ -442,7 +442,7 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     return createPutRequest("/api/v1/services/pipelineServices", jsonRequest);
   }
 
-  public HttpPut createPipelineRequest(String pipelineServiceId) throws Exception {
+  public HttpPut createPipelineRequest() throws Exception {
     Map requestMap = new HashMap<>();
     requestMap.put("name", pipelineName);
     requestMap.put("pipelineUrl", pipelineUrl);
