@@ -34,3 +34,12 @@ To use the java agent, include the openlineage-openmetadata-transporter jar in y
 ```
 -javaagent:/path/to/openlineage-openmetadata-transporter.jar=transport.pipelineServiceUrl=http://my-airflow-host,transport.auth.apiKey=myJwtToken,transport.pipelineName=my-pipeline,transport.url=http://my-openMetadata-host'
 ```
+## Links
+
+Login to your [sonatype](https://s01.oss.sonatype.org/) account to release the version
+
+| Type | URL     | Description                |
+| :-------- | :------- | :------------------------- |
+| Snapshot | [sonatype](https://s01.oss.sonatype.org/content/repositories/snapshots/io/github/natural-intelligence/openlineage-openmetadata-transporter/) | Snapshot versions |
+| Release | [sonatype](https://repo.maven.apache.org/maven2/io/github/natural-intelligence/openlineage-openmetadata-transporter/) | Release versions |
+| Release | [central-sonatype](https://central.sonatype.com/artifact/io.github.natural-intelligence/openlineage-openmetadata-transporter/1.0.0/versions) | Release versions |
