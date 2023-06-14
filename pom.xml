@@ -2,11 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <description>Transporter for integrating OpenLineage with OpenMetadata</description>
    <modelVersion>4.0.0</modelVersion>
-   <groupId>io.github.Natural-Intelligence</groupId>
+   <groupId>io.github.natural-intelligence</groupId>
    <artifactId>openlineage-openmetadata-transporter</artifactId>
    <packaging>jar</packaging>
    <version>1.9-SNAPSHOT</version>
    <name>${project.groupId}:${project.artifactId}</name>
+   <url>https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter</url>
    <licenses>
       <license>
          <name>The Apache License, Version 2.0</name>
@@ -139,22 +140,6 @@
             </configuration>
          </plugin>
          <plugin>
-            <artifactId>maven-release-plugin</artifactId>
-            <version>2.5.3</version>
-            <dependencies>
-               <dependency>
-                  <groupId>org.apache.maven.scm</groupId>
-                  <artifactId>maven-scm-provider-gitexe</artifactId>
-                  <version>1.8.1</version>
-               </dependency>
-               <dependency>
-                  <groupId>org.sonatype.plexus</groupId>
-                  <artifactId>plexus-sec-dispatcher</artifactId>
-                  <version>1.4</version>
-               </dependency>
-            </dependencies>
-         </plugin>
-         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
             <executions>
@@ -200,43 +185,35 @@
    <profiles>
       <profile>
          <id>ci-cd</id>
-         <properties>
-            <version.nexus-staging-maven-plugin>1.6.13</version.nexus-staging-maven-plugin>
-         </properties>
-         <activation>
-            <property>
-               <name>gpg.passphrase</name>
-               <value>true</value>
-            </property>
-         </activation>
          <build>
-            <pluginManagement>
-               <plugins>
-                  <plugin>
-                     <groupId>org.sonatype.plugins</groupId>
-                     <artifactId>nexus-staging-maven-plugin</artifactId>
-                     <version>${version.nexus-staging-maven-plugin}</version>
-                     <extensions>true</extensions>
-                     <configuration>
-                        <serverId>ossrh</serverId>
-                        <nexusUrl>https://s01.oss.sonatype.org</nexusUrl>
-                        <autoReleaseAfterClose>${env.AUTO_RELEASE_AFTER_CLOSE}</autoReleaseAfterClose>
-                     </configuration>
-                  </plugin>
-               </plugins>
-            </pluginManagement>
             <plugins>
-               <plugin>
-                  <artifactId>maven-gpg-plugin</artifactId>
-               </plugin>
-               <plugin>
-                  <groupId>org.sonatype.plugins</groupId>
-                  <artifactId>nexus-staging-maven-plugin</artifactId>
-               </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>1.6.13</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://s01.oss.sonatype.org</nexusUrl>
+                    <autoReleaseAfterClose>${env.AUTO_RELEASE_AFTER_CLOSE}</autoReleaseAfterClose>
+                    </configuration>
+                </plugin>
                <plugin>
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-release-plugin</artifactId>
                   <version>2.5.3</version>
+                    <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.scm</groupId>
+                        <artifactId>maven-scm-provider-gitexe</artifactId>
+                        <version>1.8.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.sonatype.plexus</groupId>
+                        <artifactId>plexus-sec-dispatcher</artifactId>
+                        <version>1.4</version>
+                    </dependency>
+                    </dependencies>
                   <configuration>
                      <tagNameFormat>@{project.version}</tagNameFormat>
                   </configuration>
