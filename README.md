@@ -40,6 +40,6 @@ Login to your [sonatype](https://s01.oss.sonatype.org/) account to release the v
 
 | Type | URL     | Description                |
 | :-------- | :------- | :------------------------- |
-| Snapshot | [sonatype](https://s01.oss.sonatype.org/content/repositories/snapshots/io/github/naturalett/my-app/) | Snapshot versions |
-| Release | [sonatype](https://repo.maven.apache.org/maven2/io/github/naturalett/my-app/) | Release versions |
-| Release | [central-sonatype](https://central.sonatype.com/artifact/io.github.naturalett/my-app/1.0.0/versions) | Release versions |
+| Snapshot | [sonatype](https://s01.oss.sonatype.org/content/repositories/snapshots/io/github/natural-intelligence/openlineage-openmetadata-transporter/) | Snapshot versions |
+| Release | [sonatype](https://repo.maven.apache.org/maven2/io/github/natural-intelligence/openlineage-openmetadata-transporter/) | Release versions |
+| Release | [central-sonatype](https://central.sonatype.com/artifact/io.github.natural-intelligence/openlineage-openmetadata-transporter/1.0.0/versions) | Release versions |
