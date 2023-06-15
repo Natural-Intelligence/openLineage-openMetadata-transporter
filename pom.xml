@@ -216,7 +216,6 @@
                     </dependencies>
                   <configuration>
                      <tagNameFormat>@{project.version}</tagNameFormat>
-                     <autoVersionSubmodules>true</autoVersionSubmodules>
                   </configuration>
                   <executions>
                      <execution>
