@@ -69,7 +69,7 @@ jobs:
           javadoc:jar \
           source:jar \
           -s settings.xml \
-          -Darguments="-Dmaven.deploy.skip=${{ env.deploy_skip }}" \
+          -Darguments="-Dmaven.deploy.skip=${{ steps.set_env_var.outputs.deploy_skip }}" \
           -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} \
           -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
           -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }} \
