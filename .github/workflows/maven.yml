@@ -53,11 +53,11 @@ jobs:
           echo "auto_release=false" >> $GITHUB_OUTPUT
         fi
     - name: Build PR with Maven
-      if: ${{ github.event_name == 'pull_request' }}
+      if: ${{ github.event.pull_request.merged == false }}
       run: |
         mvn clean install
     - name: Release with Maven
-      if: ${{ github.event_name != 'pull_request' }}
+      if: ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }}
       run: |
         mvn -B -U \
           -Pci-cd \
