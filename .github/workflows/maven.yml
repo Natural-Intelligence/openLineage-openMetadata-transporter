@@ -53,12 +53,12 @@ jobs:
           echo "auto_release=false" >> $GITHUB_OUTPUT
         fi
     - name: Build PR with Maven
-      if: ${{ github.ref != 'refs/heads/main' }}
+      if: ${{ github.ref != 'refs/remotes/origin/main' }}
       id: check_pr_event
       run: |
         mvn clean install
     - name: Release with Maven
-      if: ${{ github.ref == 'refs/heads/main' }}
+      if: ${{ github.ref == 'refs/remotes/origin/main' }}
       run: |
         mvn -B -U \
           -Pci-cd \
