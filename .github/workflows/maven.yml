@@ -53,14 +53,12 @@ jobs:
           echo "auto_release=false" >> $GITHUB_OUTPUT
         fi
     - name: Build PR with Maven
+      if: ${{ github.event_name == 'pull_request' && github.event.pull_request }}
       id: check_pr_event
       run: |
-        if [ ${{ github.event_name == 'pull_request' }} ]; then
-          echo "::set-output name=deploy_skip::true"
-        else
-          echo "::set-output name=deploy_skip::false"
-        fi
+        mvn clean install
     - name: Release with Maven
+      if: ${{ github.event_name != 'pull_request' && !github.event.pull_request }}
       run: |
         mvn -B -U \
           -Pci-cd \
@@ -69,7 +67,6 @@ jobs:
           javadoc:jar \
           source:jar \
           -s settings.xml \
-          -Darguments="-Dmaven.release.skip=${{ steps.check_pr_event.outputs.deploy_skip }}" \
           -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} \
           -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
           -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }} \
