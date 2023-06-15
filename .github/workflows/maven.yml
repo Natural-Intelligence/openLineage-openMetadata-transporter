@@ -38,7 +38,6 @@ jobs:
       run: |
         git config user.email "devops@naturalint.com"
         git config user.name "GitHub Actions"
-        git fetch --no-tags https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter.git +refs/heads/main:refs/remotes/origin/main
     - name: Import GPG Key
       uses: crazy-max/ghaction-import-gpg@v5.0.0
       with:
@@ -53,6 +52,16 @@ jobs:
         else
           echo "auto_release=false" >> $GITHUB_OUTPUT
         fi
+    - name: Build PR with Maven
+      env:
+      if: ${{ github.event_name == 'pull_request' }}
+      run: |
+        if [ ${{ github.event_name == 'pull_request' }} ]; then
+          echo "deploy_skip=true" >> $GITHUB_OUTPUT
+        else
+          echo "deploy_skip=false" >> $GITHUB_OUTPUT
+        fi
+
     - name: Release with Maven
       run: |
         mvn -B -U \
@@ -62,6 +71,7 @@ jobs:
           javadoc:jar \
           source:jar \
           -s settings.xml \
+          -Darguments="-Dmaven.deploy.skip=${{ env.deploy_skip }}" \
           -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} \
           -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
           -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }} \
