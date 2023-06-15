@@ -25,13 +25,12 @@
       <connection>scm:git:https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter.git</connection>
       <url>https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter.git</url>
       <developerConnection>scm:git:https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter.git</developerConnection>
-      <tag>HEAD</tag>
    </scm>
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <maven.compiler.source>1.8</maven.compiler.source>
       <maven.compiler.target>1.8</maven.compiler.target>
-      <jacksonVersion>2.13.4</jacksonVersion>
+      <jacksonVersion>2.13.5</jacksonVersion>
       <openLineageVersion>0.25.0</openLineageVersion>
    </properties>
    <dependencies>
@@ -79,7 +78,7 @@
       <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
-         <version>4.12</version>
+         <version>4.13.1</version>
          <scope>test</scope>
       </dependency>
       <dependency>

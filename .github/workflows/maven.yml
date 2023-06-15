@@ -2,9 +2,14 @@
 
 name: Java CI with Maven
 
+
 on:
-  push:
-    branches: [ main ]
+  pull_request:
+    types:
+      - synchronize
+      - opened
+      - reopened
+      - closed
   workflow_dispatch:
     inputs:
       releaseVersion:
