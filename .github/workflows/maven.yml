@@ -4,8 +4,12 @@ name: Java CI with Maven
 
 
 on:
-  pull_request_target:
-    types: [labeled, opened, synchronize, reopened, closed]
+  pull_request:
+    types:
+      - synchronize
+      - opened
+      - reopened
+      - closed
   workflow_dispatch:
     inputs:
       releaseVersion:
