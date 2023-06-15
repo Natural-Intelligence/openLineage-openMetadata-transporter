@@ -38,6 +38,7 @@ jobs:
       run: |
         git config user.email "devops@naturalint.com"
         git config user.name "GitHub Actions"
+        git fetch --no-tags https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter.git +refs/heads/main:refs/remotes/origin/main
     - name: Import GPG Key
       uses: crazy-max/ghaction-import-gpg@v5.0.0
       with:
@@ -54,7 +55,7 @@ jobs:
         fi
     - name: Release with Maven
       run: |
-        mvn clean -B -U \
+        mvn -B -U \
           -Pci-cd \
           release:prepare \
           release:perform \
