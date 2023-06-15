@@ -54,7 +54,7 @@ jobs:
         fi
     - name: Release with Maven
       run: |
-        mvn -B -U \
+        mvn clean -B -U \
           -Pci-cd \
           release:prepare \
           release:perform \
