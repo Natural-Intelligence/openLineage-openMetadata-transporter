@@ -84,7 +84,7 @@ jobs:
       if: ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }}
       shell: bash
       run: |
-        mv ./target/*.*:${{ env.artifact_name }}.jar ./target/${{ env.artifact_name }}.jar
+        mv ./target/*.*:${{ env.artifact_name }}*.jar ./target/${{ env.artifact_name }}.jar
     - name: Upload Artifact
       if: ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }}
       uses: actions/upload-artifact@v3
