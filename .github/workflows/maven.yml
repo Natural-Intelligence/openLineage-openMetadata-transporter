@@ -93,4 +93,4 @@ jobs:
       if: ${{ github.event.inputs.releaseVersion }} != "" && ${{ github.event.inputs.developmentVersion }} != ""
       with:
         event-type: release-notes
-        client-payload: '{"auto_release": "${{ env.auto_release }}"}'
+        client-payload: '{"auto_release": "${{ env.auto_release }}", "artifact_name": "${{ env.artifact_name }}"}'
