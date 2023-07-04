@@ -1,0 +1,41 @@
+{
+    "categories": [
+        {
+            "title": "## 🚀 Features",
+            "labels": ["feature", "minor", "major"],
+            "exclude_labels": ["fix", "patch"]
+        },
+        {
+            "title": "## 🐛 Fixes",
+            "labels": ["fix", "patch"],
+            "exclude_labels": ["feature", "minor", "major"]
+        },
+        {
+            "title": "## 🐛 Wiki",
+            "labels": ["wiki"]
+        },
+        {
+            "title": "## 🐛 Test",
+            "labels": ["test"],
+            "exclude_labels": ["feature", "fix", "minor", "patch", "major"]
+        },
+        {
+            "title": "## 🧪 Github",
+            "labels": ["github"]
+        },
+        {
+            "title": "## 💬 Other",
+            "labels": ["other"]
+        },
+        {
+            "title": "## 📦 Dependencies",
+            "labels": ["dependencies"]
+        }
+    ],
+    "sort": "ASC",
+    "template": "${{CHANGELOG}}",
+    "pr_template": "- ${{TITLE}}\n   - PR: #${{NUMBER}}",
+    "empty_template": "- no changes",
+    "max_pull_requests": 1000,
+    "max_back_track_time_days": 1000
+}

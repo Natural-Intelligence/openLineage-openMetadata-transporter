@@ -1,0 +1,55 @@
+# https://github.com/marketplace/actions/pr-labeler-based-on-multiple-rules
+name: "Pull Request Labeler"
+on:
+  pull_request:
+    types:
+      - reopened
+      - opened
+
+
+jobs:
+  branch-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Labels Based Branch
+        uses: srvaroa/labeler@v0.8
+        with:
+          config_path: ".github/configs/branch_label.yml"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  files-labels:
+    needs: branch-label
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Branch labels
+        run: |
+          cat <<EOF >> pr_labels.txt
+          patch
+          minor
+          major
+          EOF
+      - name: Get PR Labels
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/${{github.event.repository.owner.login}}/${{github.event.repository.name}}/pulls/${{github.event.pull_request.number}} | jq -r '.labels[] | .name' > labels.txt
+      - name: Decide if to trigger Files Labels
+        id: trigger
+        run: |
+          comm -12  <(cat labels.txt | sort) <(cat pr_labels.txt | sort)
+          if [[ $(comm -12  <(cat labels.txt | sort) <(cat pr_labels.txt | sort)) ]]; then
+            echo "trigger_files_labels=true" >> $GITHUB_ENV
+          else
+            echo "trigger_files_labels=false" >> $GITHUB_ENV
+          fi
+      - name: Create Labels Based Files
+        if: env.trigger_files_labels != 'true'
+        uses: srvaroa/labeler@v0.8
+        with:
+          config_path: ".github/configs/files_label.yml"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
