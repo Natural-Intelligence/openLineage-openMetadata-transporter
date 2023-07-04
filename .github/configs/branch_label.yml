@@ -1,0 +1,12 @@
+version: 1
+labels:
+  - label: "major"
+    branch: "^release/.*"
+  - label: "feature"
+    branch: "^feature/.*"
+  - label: "minor"
+    branch: "^feature/.*"
+  - label: "fix"
+    branch: "^fix/.*"
+  - label: "patch"
+    branch: "^fix/.*"

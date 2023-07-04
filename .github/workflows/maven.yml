@@ -38,19 +38,20 @@ jobs:
       run: |
         git config user.email "devops@naturalint.com"
         git config user.name "GitHub Actions"
+        echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
     - name: Import GPG Key
       uses: crazy-max/ghaction-import-gpg@v5.0.0
       with:
         gpg_private_key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-    - name: Verify whether a release is ready
+    - name: Verify Whether a Release is Ready
       id: release
       shell: bash
       run: |
         if [ "${{ github.event.inputs.releaseVersion }}" != "" ] && [ "${{ github.event.inputs.developmentVersion }}" != "" ]; then
-          echo "auto_release=true" >> $GITHUB_OUTPUT
+          echo "auto_release=true" >> $GITHUB_ENV
         else
-          echo "auto_release=false" >> $GITHUB_OUTPUT
+          echo "auto_release=false" >> $GITHUB_ENV
         fi
     - name: Build PR with Maven
       if: ${{ github.event.pull_request.merged == false }}
@@ -73,4 +74,28 @@ jobs:
       env:
         MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
-        AUTO_RELEASE_AFTER_CLOSE: ${{ steps.release.outputs.auto_release }}
+        AUTO_RELEASE_AFTER_CLOSE: ${{ env.auto_release }}
+    - name: Artifact Name
+      if: ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }}
+      shell: bash
+      run: |
+        echo "artifact_name=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.artifactId -q -DforceStdout)" >> "$GITHUB_ENV"
+    - name: Define Jar Name
+      if: ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }}
+      shell: bash
+      run: |
+        mv ./target/*.*:${{ env.artifact_name }}.jar ./target/${{ env.artifact_name }}.jar
+    - name: Upload Artifact
+      if: ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.artifact_name }}-${{ env.sha_short }}
+        path: ./target/${{ env.artifact_name }}.jar
+    - name: Workflow Release Notes
+      if: |
+        ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }} &&
+        ${{ github.event.inputs.releaseVersion }} != "" && ${{ github.event.inputs.developmentVersion }} != ""
+      uses: peter-evans/repository-dispatch@v2
+      with:
+        event-type: release-notes
+        client-payload: '{"auto_release": "${{ env.auto_release }}", "artifact": "${{ env.artifact_name }}-${{ env.sha_short }}"}'

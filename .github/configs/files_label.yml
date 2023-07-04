@@ -1,0 +1,32 @@
+version: 1
+labels:
+  - label: "github"
+    files:
+      - ".github/.*"
+  - label: "git"
+    files:
+      - ".gitignore"
+      - ".gitattributes"
+  - label: "wiki"
+    files:
+      - "README.md"
+  - label: "dependencies"
+    files:
+      - "pom.xml"
+  - label: "feature"
+    files:
+      - "src/*"
+  - label: "minor"
+    files:
+      - "src/*"
+  - label: "feature"
+    files:
+      - "Dockerfile"
+      - "setting.xml"
+  - label: "minor"
+    files:
+      - "Dockerfile"
+      - "setting.xml"
+  - label: "test"
+    files:
+      - "tests/*"
