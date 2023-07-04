@@ -79,20 +79,20 @@ jobs:
       if: ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }}
       shell: bash
       run: |
-        echo "artifact_name=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.artifactId -q -DforceStdout)" >> "$GITHUB_ENV"
+        echo "artifact_name=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.artifactId -q -DforceStdout)" >> $GITHUB_ENV
+        echo "group_name=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.groupId -q -DforceStdout)" >> $GITHUB_ENV
     - name: Define Jar Name
       if: ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }}
       shell: bash
       run: |
         ls -al ./target/
-        mkdir -p "${{ github.workspace }}/jars"
-        mv "./target/*.*:${{ env.artifact_name }}.jar" "${{ github.workspace }}/jars/${{ env.artifact_name }}.jar"
+        mv ./target/${{ env.group_name }}:${{ env.artifact_name }}.jar ./target/${{ env.artifact_name }}.jar
     - name: Upload Artifact
       if: ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }}
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.artifact_name }}-${{ env.sha_short }}
-        path: "${{ github.workspace }}/jars/${{ env.artifact_name }}.jar"
+        path: ./target/${{ env.artifact_name }}.jar
     - name: Workflow Release Notes
       if: |
         ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }} &&
