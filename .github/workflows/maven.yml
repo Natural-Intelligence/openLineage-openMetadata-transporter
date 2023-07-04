@@ -85,12 +85,14 @@ jobs:
       shell: bash
       run: |
         ls -al ./target/
+        mkdir -p "${{ github.workspace }}/jars"
+        mv "./target/*.*:${{ env.artifact_name }}.jar" "${{ github.workspace }}/jars/${{ env.artifact_name }}.jar"
     - name: Upload Artifact
       if: ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }}
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.artifact_name }}-${{ env.sha_short }}
-        path: ./target/*.*:${{ env.artifact_name }}.jar
+        path: "${{ github.workspace }}/jars/${{ env.artifact_name }}.jar"
     - name: Workflow Release Notes
       if: |
         ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }} &&
