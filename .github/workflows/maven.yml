@@ -92,9 +92,10 @@ jobs:
         name: ${{ env.artifact_name }}-${{ env.sha_short }}
         path: ./target/${{ env.artifact_name }}.jar
     - name: Workflow Release Notes
-      if: ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }}
+      if: |
+        ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }} &&
+        ${{ github.event.inputs.releaseVersion }} != "" && ${{ github.event.inputs.developmentVersion }} != ""
       uses: peter-evans/repository-dispatch@v2
-      if: ${{ github.event.inputs.releaseVersion }} != "" && ${{ github.event.inputs.developmentVersion }} != ""
       with:
         event-type: release-notes
         client-payload: '{"auto_release": "${{ env.auto_release }}", "artifact_name": "${{ env.artifact_name }}"}'
