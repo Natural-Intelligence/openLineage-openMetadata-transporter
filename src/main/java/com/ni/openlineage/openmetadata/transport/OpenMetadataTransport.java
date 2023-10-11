@@ -445,7 +445,7 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
   public HttpPut createPipelineRequest() throws Exception {
     Map requestMap = new HashMap<>();
     requestMap.put("name", pipelineName);
-    requestMap.put("pipelineUrl", pipelineUrl);
+    requestMap.put("sourceUrl", pipelineUrl);
 
     if (pipelineDescription != null && !pipelineDescription.isEmpty()) {
       requestMap.put("description", pipelineDescription);
