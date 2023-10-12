@@ -5,7 +5,7 @@
    <groupId>io.github.natural-intelligence</groupId>
    <artifactId>openlineage-openmetadata-transporter</artifactId>
    <packaging>jar</packaging>
-   <version>1.31-SNAPSHOT</version>
+   <version>1.31</version>
    <name>${project.groupId}:${project.artifactId}</name>
    <url>https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter</url>
    <licenses>
@@ -25,7 +25,7 @@
       <connection>scm:git:https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter.git</connection>
       <url>https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter.git</url>
       <developerConnection>scm:git:https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter.git</developerConnection>
-     <tag>1.30</tag>
+     <tag>1.31</tag>
   </scm>
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
