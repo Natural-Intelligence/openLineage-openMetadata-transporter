@@ -43,3 +43,4 @@ Login to your [sonatype](https://s01.oss.sonatype.org/) account to release the v
 | Snapshot | [sonatype](https://s01.oss.sonatype.org/content/repositories/snapshots/io/github/natural-intelligence/openlineage-openmetadata-transporter/) | Snapshot versions |
 | Release | [sonatype](https://repo.maven.apache.org/maven2/io/github/natural-intelligence/openlineage-openmetadata-transporter/) | Release versions |
 | Release | [central-sonatype](https://central.sonatype.com/artifact/io.github.natural-intelligence/openlineage-openmetadata-transporter/1.11/versions) | Release versions |
+
