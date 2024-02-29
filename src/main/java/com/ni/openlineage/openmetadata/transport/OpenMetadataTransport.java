@@ -2,9 +2,9 @@ package com.ni.openlineage.openmetadata.transport;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ni.SecretManager;
 import io.openlineage.client.OpenLineage;
 import io.openlineage.client.OpenLineageClientException;
-import io.openlineage.client.transports.TokenProvider;
 import io.openlineage.client.transports.Transport;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -41,12 +41,12 @@ import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 public final class OpenMetadataTransport extends Transport implements Closeable {
 
   private final CloseableHttpClient http;
-  private final URI uri;
+  private URI uri;
   private final String pipelineServiceName;
   private final String pipelineName;
   private final String pipelineServiceUrl;
   private @Nullable
-  final TokenProvider tokenProvider;
+  String token;
   private @Nullable
   final String pipelineUrl;
   private @Nullable
@@ -54,6 +54,10 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
 
   private final Map<LineageType, Set<String>> tableNamesCache = new ConcurrentHashMap<>();
   private final static String LAST_UPDATE_TIME = "lastUpdateTime";
+  private final static String API_KEY = "api-key";
+  private final static String OPEN_METADATA_URI = "openmetadata-uri";
+  public final static String REGION = "us-east-1";
+  public final static String SERVICE_NAME = "open-metadata-transporter";
 
   public enum LineageType {
     OUTLET,
@@ -84,13 +88,37 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
   public OpenMetadataTransport(
       @NonNull final CloseableHttpClient httpClient, @NonNull final OpenMetadataConfig openMetadataConfig) {
     this.http = httpClient;
-    this.uri = openMetadataConfig.getUrl();
-    this.tokenProvider = openMetadataConfig.getAuth();
     this.pipelineName = openMetadataConfig.getPipelineName();
     this.pipelineServiceUrl = openMetadataConfig.getPipelineServiceUrl();
     this.pipelineServiceName = getServerName(this.pipelineServiceUrl);
     this.pipelineUrl = "/tree?dag_id=" + this.pipelineName;
     this.pipelineDescription = openMetadataConfig.getPipelineDescription();
+    if (openMetadataConfig.getSsm() != null) {
+      try {
+        String region = Optional.ofNullable(openMetadataConfig.getSsm().getRegion()).orElse(REGION);
+        String serviceName = Optional.ofNullable(openMetadataConfig.getSsm().getServiceName()).orElse(SERVICE_NAME);
+        log.info("### region = {}, serviceName = {}, env = {}", region, serviceName, openMetadataConfig.getSsm().getEnvironment());
+        SecretManager secretManager = new SecretManager(region,
+            serviceName, openMetadataConfig.getSsm().getEnvironment());
+        secretManager.initialize(API_KEY, OPEN_METADATA_URI);
+
+        Map<String, String> credentials = secretManager.getCredentials(API_KEY, OPEN_METADATA_URI);
+        this.token = credentials.get(API_KEY);
+        this.uri = new URIBuilder(credentials.get(OPEN_METADATA_URI)).build();
+
+        log.info("### token from SSM = " + token);
+        log.info("### uri from SSM = " + uri);
+      } catch (Exception e) {
+        log.error("Failed to get data from secret manager");
+      }
+    } else {
+      if (openMetadataConfig.getAuth() != null) {
+        this.token = openMetadataConfig.getAuth().getToken();
+        log.info("### token parameter = " + token);
+      }
+      this.uri = openMetadataConfig.getUrl();
+      log.info("### uri parameter = " + uri);
+    }
   }
 
   @Override
@@ -379,8 +407,8 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     HttpPatch patchRequest = new HttpPatch(url);
 
     patchRequest.setHeader(CONTENT_TYPE, "application/json-patch+json");
-    if (tokenProvider != null) {
-      patchRequest.setHeader(AUTHORIZATION, tokenProvider.getToken());
+    if (token != null) {
+      patchRequest.setHeader(AUTHORIZATION, token);
     }
     patchRequest.setEntity(new StringEntity(jsonPayload));
 
@@ -405,8 +433,8 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     request.addHeader(ACCEPT, APPLICATION_JSON.toString());
     request.addHeader(CONTENT_TYPE, APPLICATION_JSON.toString());
 
-    if (tokenProvider != null) {
-      request.addHeader(AUTHORIZATION, tokenProvider.getToken());
+    if (token != null) {
+      request.addHeader(AUTHORIZATION, token);
     }
     return request;
   }

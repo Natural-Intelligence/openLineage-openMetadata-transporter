@@ -33,6 +33,7 @@
       <maven.compiler.target>1.8</maven.compiler.target>
       <jacksonVersion>2.13.5</jacksonVersion>
       <openLineageVersion>0.25.0</openLineageVersion>
+      <ni.secrets.version>2.0.0</ni.secrets.version>
    </properties>
    <dependencies>
       <dependency>
@@ -96,6 +97,11 @@
          <groupId>net.bytebuddy</groupId>
          <artifactId>byte-buddy-agent</artifactId>
          <version>1.14.4</version>
+      </dependency>
+      <dependency>
+         <groupId>com.naturalint</groupId>
+         <artifactId>ni-secrets</artifactId>
+         <version>${ni.secrets.version}</version>
       </dependency>
    </dependencies>
    <build>
