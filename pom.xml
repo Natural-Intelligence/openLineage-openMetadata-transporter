@@ -33,7 +33,6 @@
       <maven.compiler.target>1.8</maven.compiler.target>
       <jacksonVersion>2.13.5</jacksonVersion>
       <openLineageVersion>0.25.0</openLineageVersion>
-      <ni.secrets.version>2.0.0</ni.secrets.version>
    </properties>
    <dependencies>
       <dependency>
@@ -99,9 +98,9 @@
          <version>1.14.4</version>
       </dependency>
       <dependency>
-         <groupId>com.naturalint</groupId>
-         <artifactId>ni-secrets</artifactId>
-         <version>${ni.secrets.version}</version>
+         <groupId>software.amazon.awssdk</groupId>
+         <artifactId>ssm</artifactId>
+         <version>2.25.1</version>
       </dependency>
    </dependencies>
    <build>
@@ -178,12 +177,6 @@
          </plugin>
       </plugins>
    </build>
-   <repositories>
-        <repository>
-            <id>ni-nexus-repository</id>
-            <url>https://nexus3-external.naturalint.com/repository/NI-MVN/</url>
-        </repository>
-   </repositories>
    <distributionManagement>
       <snapshotRepository>
          <id>ossrh</id>
