@@ -2,7 +2,6 @@ package com.ni.openlineage.openmetadata.transport;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ni.SecretManager;
 import io.openlineage.client.OpenLineage;
 import io.openlineage.client.OpenLineageClientException;
 import io.openlineage.client.transports.Transport;
