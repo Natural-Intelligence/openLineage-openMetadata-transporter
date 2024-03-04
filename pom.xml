@@ -102,6 +102,11 @@
          <artifactId>ssm</artifactId>
          <version>2.25.1</version>
       </dependency>
+      <dependency>
+         <groupId>software.amazon.awssdk</groupId>
+         <artifactId>aws-core</artifactId>
+         <version>2.25.1</version>
+      </dependency>
    </dependencies>
    <build>
       <finalName>${project.groupId}:${project.artifactId}</finalName>
@@ -159,6 +164,7 @@
                            <include>net.bytebuddy:byte-buddy</include>
                            <include>net.bytebuddy:byte-buddy-agent</include>
                            <include>software.amazon.awssdk:ssm</include>
+                           <include>software.amazon.awssdk:aws-core</include>
                         </includes>
                      </artifactSet>
                   </configuration>
