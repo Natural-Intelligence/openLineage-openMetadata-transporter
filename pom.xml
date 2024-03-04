@@ -158,6 +158,7 @@
                         <includes>
                            <include>net.bytebuddy:byte-buddy</include>
                            <include>net.bytebuddy:byte-buddy-agent</include>
+                           <include>software.amazon.awssdk:ssm</include>
                         </includes>
                      </artifactSet>
                   </configuration>
