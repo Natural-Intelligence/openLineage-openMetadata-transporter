@@ -51,18 +51,18 @@ public class OpenMetdataJdbcAgent {
       }
 
       if (agentArgsMap.containsKey("transport.ssm.environment")) {
-        log.error("### env = " + agentArgsMap.get("transport.ssm.environment"));
         SSMProvider ssmProvider = SSMProvider.builder()
             .environment(agentArgsMap.get("transport.ssm.environment"))
             .region(agentArgsMap.getOrDefault("transport.ssm.region", REGION))
             .serviceName(agentArgsMap.getOrDefault("transport.ssm.serviceName", SERVICE_NAME))
             .build();
         openMetadataConfig.setSsm(ssmProvider);
+      } else {
+        openMetadataConfig.setUrl(new URI(agentArgsMap.get("transport.url")));
       }
 
       openMetadataConfig.setPipelineServiceUrl(agentArgsMap.get("transport.pipelineServiceUrl"));
       openMetadataConfig.setPipelineName(agentArgsMap.get("transport.pipelineName"));
-      openMetadataConfig.setUrl(new URI(agentArgsMap.get("transport.url")));
       openMetadataTransport = (OpenMetadataTransport) new OpenMetadataTransportBuilder().build(openMetadataConfig);
     } catch (Exception e) {
       System.out.println("Unable to parse open lineage endpoint. Lineage events will not be collected due to " + e.getMessage());

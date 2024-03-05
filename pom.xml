@@ -5,7 +5,7 @@
    <groupId>io.github.natural-intelligence</groupId>
    <artifactId>openlineage-openmetadata-transporter</artifactId>
    <packaging>jar</packaging>
-   <version>1.37.2-SNAPSHOT</version>
+   <version>1.38-SNAPSHOT</version>
    <name>${project.groupId}:${project.artifactId}</name>
    <url>https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter</url>
    <licenses>
@@ -102,21 +102,6 @@
          <artifactId>aws-java-sdk-ssm</artifactId>
          <version>1.12.362</version>
       </dependency>
-<!--      <dependency>-->
-<!--         <groupId>software.amazon.awssdk</groupId>-->
-<!--         <artifactId>ssm</artifactId>-->
-<!--         <version>2.25.1</version>-->
-<!--      </dependency>-->
-<!--      <dependency>-->
-<!--         <groupId>software.amazon.awssdk</groupId>-->
-<!--         <artifactId>aws-core</artifactId>-->
-<!--         <version>2.25.1</version>-->
-<!--      </dependency>-->
-<!--      <dependency>-->
-<!--         <groupId>software.amazon.awssdk</groupId>-->
-<!--         <artifactId>sdk-core</artifactId>-->
-<!--         <version>2.25.1</version>-->
-<!--      </dependency>-->
    </dependencies>
    <build>
       <finalName>${project.groupId}:${project.artifactId}</finalName>
@@ -174,9 +159,6 @@
                            <include>net.bytebuddy:byte-buddy</include>
                            <include>net.bytebuddy:byte-buddy-agent</include>
                            <include>com.amazonaws:aws-java-sdk-ssm</include>
-<!--                           <include>software.amazon.awssdk:ssm</include>-->
-<!--                           <include>software.amazon.awssdk:aws-core</include>-->
-<!--                           <include>software.amazon.awssdk:sdk-core</include>-->
                         </includes>
                      </artifactSet>
                   </configuration>

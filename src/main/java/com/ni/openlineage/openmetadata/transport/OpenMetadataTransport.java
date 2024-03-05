@@ -20,8 +20,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-//import software.amazon.awssdk.regions.Region;
-//import software.amazon.awssdk.services.ssm.SsmClient;
 
 import javax.annotation.Nullable;
 import java.io.Closeable;
@@ -103,10 +101,8 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     } else {
       if (openMetadataConfig.getAuth() != null) {
         this.token = openMetadataConfig.getAuth().getToken();
-        log.info("### token parameter = " + token);
       }
       this.uri = openMetadataConfig.getUrl();
-      log.info("### uri parameter = " + uri);
     }
   }
 
@@ -115,61 +111,18 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
       String region = Optional.ofNullable(openMetadataConfig.getSsm().getRegion()).orElse(REGION);
       String serviceName = Optional.ofNullable(openMetadataConfig.getSsm().getServiceName()).orElse(SERVICE_NAME);
       String env = openMetadataConfig.getSsm().getEnvironment();
-      log.info("### region = {}, serviceName = {}, env = {}", region, serviceName, openMetadataConfig.getSsm().getEnvironment());
-
-//      SsmClient ssmClient = SsmClient.builder()
-//              .region(Region.of(region))
-//              .build();
-
       AWSSimpleSystemsManagement ssm = AWSSimpleSystemsManagementClientBuilder.standard().withRegion(region).build();
 
       String apiKey = getSsmParameter(ssm, serviceName, env, API_KEY);
       this.token = String.format("Bearer %s", apiKey);
       String uriStr = "https://" + getSsmParameter(ssm, serviceName, env, OPEN_METADATA_URI);
-      log.info("### token from SSM = " + this.token);
-      log.info("### uri from SSM = " + uriStr);
       this.uri = new URIBuilder(uriStr).build();
 
-      // Close the SsmClient when done
-//      ssmClient.close();
     } catch (Exception e) {
       log.error("Failed to get data from SSM: {}", e.getMessage(), e);
     }
 
   }
-//  private void getSsmParameters(OpenMetadataConfig openMetadataConfig) {
-//    try {
-//      String region = Optional.ofNullable(openMetadataConfig.getSsm().getRegion()).orElse(REGION);
-//      String serviceName = Optional.ofNullable(openMetadataConfig.getSsm().getServiceName()).orElse(SERVICE_NAME);
-//      String env = openMetadataConfig.getSsm().getEnvironment();
-//      log.info("### region = {}, serviceName = {}, env = {}", region, serviceName, openMetadataConfig.getSsm().getEnvironment());
-//
-//      SsmClient ssmClient = SsmClient.builder()
-//          .region(Region.of(region))
-//          .build();
-//
-//      this.token = getSsmParameter(ssmClient, serviceName, env, API_KEY);
-//      String uriStr = getSsmParameter(ssmClient, serviceName, env, OPEN_METADATA_URI);
-//      log.info("### token from SSM = " + token);
-//      log.info("### uri from SSM = " + uriStr);
-//      this.uri = new URIBuilder(uriStr).build();
-//
-//      // Close the SsmClient when done
-//      ssmClient.close();
-//    } catch (Exception e) {
-//      log.error("Failed to get data from SSM: {}", e.getMessage(), e);
-//    }
-//  }
-
-//  private String getSsmParameter(SsmClient ssmClient, String serviceName, String env, String parameterName) {
-//    try {
-//      String fullParameterName = "cred_" + serviceName + "_" + parameterName + "_" + env;
-//      return ssmClient.getParameter(builder -> builder.name(fullParameterName).withDecryption(true)).parameter().value();
-//    } catch (Exception e) {
-//      log.error("Failed to get parameter from SSM: {}" + e.getMessage(), e);
-//      return null;
-//    }
-//  }
 
   private String getSsmParameter(AWSSimpleSystemsManagement ssm, String serviceName, String env, String parameterName) {
     try {
@@ -276,10 +229,8 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
     try {
       HttpGet request = createGetTableRequest(tableName);
       Map response = sendRequest(request);
-      log.error("### response = {}", response.toString());
       Map<String, Object> hitsResult = (Map<String, Object>) response.get("hits");
       int totalHits = Integer.parseInt(((Map<String, Object>) hitsResult.get("total")).get("value").toString());
-      log.error("### totalHits = {}", totalHits);
       if (totalHits == 0) {
         log.error("Failed to get id of table {} from OpenMetadata.", tableName);
         return Collections.emptySet();
@@ -485,8 +436,6 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
 
   private HttpRequestBase createHttpRequest(Supplier<HttpRequestBase> supplier, String path,
                                             Map<String, String> queryParams) throws URISyntaxException, MalformedURLException {
-    log.error("### in createHttpRequest, this.uri = {}", this.uri);
-    log.error("### in createHttpRequest, this.token = {}", this.token);
     URIBuilder uriBuilder = new URIBuilder(this.uri);
     uriBuilder.setPath(path);
     if (queryParams != null) {
