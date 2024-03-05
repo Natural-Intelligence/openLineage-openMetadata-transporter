@@ -110,11 +110,14 @@ public class OpenMetadataJdbcLineageAdvice {
     OpenMetadataTransport openMetadataTransport = OpenMetdataJdbcAgent.getOpenMetadataTransport();
     String dbName = openMetadataTransport.extractDbNameFromUrl(url.replace("jdbc:", ""));
 
+    System.out.println("### sqlMeta = " + sqlMeta);
     if (sqlMeta.inTables() != null && !sqlMeta.inTables().isEmpty()) {
+      System.out.println("### in tables = " + sqlMeta.inTables());
       transportLineageToOpenMetadata(OpenMetadataTransport.LineageType.INLET, sqlMeta.inTables(), dbName, openMetadataTransport);
     }
 
     if (sqlMeta.outTables() != null && !sqlMeta.outTables().isEmpty()) {
+      System.out.println("### out tables = " + sqlMeta.outTables());
       transportLineageToOpenMetadata(OpenMetadataTransport.LineageType.OUTLET, sqlMeta.outTables(), dbName, openMetadataTransport);
     }
   }
