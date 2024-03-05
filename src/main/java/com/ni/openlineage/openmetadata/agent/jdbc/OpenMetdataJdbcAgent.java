@@ -50,7 +50,8 @@ public class OpenMetdataJdbcAgent {
         openMetadataConfig.setAuth(apiKeyTokenProvider);
       }
 
-      if (agentArgsMap.containsKey("transport.ssm.serviceName")) {
+      if (agentArgsMap.containsKey("transport.ssm.environment")) {
+        log.error("### env = " + agentArgsMap.get("transport.ssm.environment"));
         SSMProvider ssmProvider = SSMProvider.builder()
             .environment(agentArgsMap.get("transport.ssm.environment"))
             .region(agentArgsMap.getOrDefault("transport.ssm.region", REGION))
