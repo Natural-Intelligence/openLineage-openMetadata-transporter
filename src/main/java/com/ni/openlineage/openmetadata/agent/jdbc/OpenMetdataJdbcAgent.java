@@ -3,6 +3,7 @@ package com.ni.openlineage.openmetadata.agent.jdbc;
 import com.ni.openlineage.openmetadata.transport.OpenMetadataConfig;
 import com.ni.openlineage.openmetadata.transport.OpenMetadataTransport;
 import com.ni.openlineage.openmetadata.transport.OpenMetadataTransportBuilder;
+import com.ni.openlineage.openmetadata.transport.SSMProvider;
 import io.openlineage.client.transports.ApiKeyTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -15,6 +16,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.ni.openlineage.openmetadata.transport.OpenMetadataTransport.REGION;
+import static com.ni.openlineage.openmetadata.transport.OpenMetadataTransport.SERVICE_NAME;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 @Slf4j
@@ -40,12 +43,26 @@ public class OpenMetdataJdbcAgent {
     try {
       Map<String, String> agentArgsMap = parseAgentArgs(agentArgs);
       OpenMetadataConfig openMetadataConfig = new OpenMetadataConfig();
-      ApiKeyTokenProvider apiKeyTokenProvider = new ApiKeyTokenProvider();
-      apiKeyTokenProvider.setApiKey(agentArgsMap.get("transport.auth.apiKey"));
-      openMetadataConfig.setAuth(apiKeyTokenProvider);
+
+      if (agentArgsMap.containsKey("transport.auth.apiKey")) {
+        ApiKeyTokenProvider apiKeyTokenProvider = new ApiKeyTokenProvider();
+        apiKeyTokenProvider.setApiKey(agentArgsMap.get("transport.auth.apiKey"));
+        openMetadataConfig.setAuth(apiKeyTokenProvider);
+      }
+
+      if (agentArgsMap.containsKey("transport.ssm.environment")) {
+        SSMProvider ssmProvider = SSMProvider.builder()
+            .environment(agentArgsMap.get("transport.ssm.environment"))
+            .region(agentArgsMap.getOrDefault("transport.ssm.region", REGION))
+            .serviceName(agentArgsMap.getOrDefault("transport.ssm.serviceName", SERVICE_NAME))
+            .build();
+        openMetadataConfig.setSsm(ssmProvider);
+      } else {
+        openMetadataConfig.setUrl(new URI(agentArgsMap.get("transport.url")));
+      }
+
       openMetadataConfig.setPipelineServiceUrl(agentArgsMap.get("transport.pipelineServiceUrl"));
       openMetadataConfig.setPipelineName(agentArgsMap.get("transport.pipelineName"));
-      openMetadataConfig.setUrl(new URI(agentArgsMap.get("transport.url")));
       openMetadataTransport = (OpenMetadataTransport) new OpenMetadataTransportBuilder().build(openMetadataConfig);
     } catch (Exception e) {
       System.out.println("Unable to parse open lineage endpoint. Lineage events will not be collected due to " + e.getMessage());

@@ -16,4 +16,5 @@ public final class OpenMetadataConfig implements TransportConfig {
     @Getter @Setter private String pipelineName;
     @Getter @Setter private String pipelineServiceUrl;
     @Getter @Setter private @Nullable String pipelineDescription;
+    @Getter @Setter private @Nullable SSMProvider ssm;
 }

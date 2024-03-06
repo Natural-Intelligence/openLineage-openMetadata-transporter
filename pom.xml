@@ -5,7 +5,7 @@
    <groupId>io.github.natural-intelligence</groupId>
    <artifactId>openlineage-openmetadata-transporter</artifactId>
    <packaging>jar</packaging>
-   <version>1.36</version>
+   <version>1.38-SNAPSHOT</version>
    <name>${project.groupId}:${project.artifactId}</name>
    <url>https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter</url>
    <licenses>
@@ -97,6 +97,11 @@
          <artifactId>byte-buddy-agent</artifactId>
          <version>1.14.4</version>
       </dependency>
+      <dependency>
+         <groupId>com.amazonaws</groupId>
+         <artifactId>aws-java-sdk-ssm</artifactId>
+         <version>1.12.362</version>
+      </dependency>
    </dependencies>
    <build>
       <finalName>${project.groupId}:${project.artifactId}</finalName>
@@ -153,6 +158,7 @@
                         <includes>
                            <include>net.bytebuddy:byte-buddy</include>
                            <include>net.bytebuddy:byte-buddy-agent</include>
+                           <include>com.amazonaws:aws-java-sdk-ssm</include>
                         </includes>
                      </artifactSet>
                   </configuration>
