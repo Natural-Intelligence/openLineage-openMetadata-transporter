@@ -88,7 +88,7 @@ jobs:
         mv ./target/${{ env.group_name }}:${{ env.artifact_name }}.jar ./target/${{ env.artifact_name }}.jar
     - name: Upload Artifact
       if: ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }}
-      uses: uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.artifact_name }}-${{ env.sha_short }}
         path: ./target/${{ env.artifact_name }}.jar
