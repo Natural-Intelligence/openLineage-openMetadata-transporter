@@ -98,9 +98,9 @@
          <version>1.14.4</version>
       </dependency>
       <dependency>
-         <groupId>com.amazonaws</groupId>
-         <artifactId>aws-java-sdk-ssm</artifactId>
-         <version>1.12.362</version>
+         <groupId>software.amazon.awssdk</groupId>
+         <artifactId>ssm</artifactId>
+         <version>2.31.9</version>
       </dependency>
    </dependencies>
    <build>
@@ -158,7 +158,7 @@
                         <includes>
                            <include>net.bytebuddy:byte-buddy</include>
                            <include>net.bytebuddy:byte-buddy-agent</include>
-                           <include>com.amazonaws:aws-java-sdk-ssm</include>
+                           <include>software.amazon.awssdk:ssm</include>
                         </includes>
                      </artifactSet>
                   </configuration>

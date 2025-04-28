@@ -1,9 +1,10 @@
 package com.ni.openlineage.openmetadata.transport;
 
-import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagement;
-import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagementClientBuilder;
-import com.amazonaws.services.simplesystemsmanagement.model.GetParametersRequest;
-import com.amazonaws.services.simplesystemsmanagement.model.GetParametersResult;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.ssm.model.GetParametersRequest;
+import software.amazon.awssdk.services.ssm.model.GetParametersResponse;
+import software.amazon.awssdk.services.ssm.model.Parameter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openlineage.client.OpenLineage;
@@ -108,29 +109,43 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
 
   private void getSsmParameters(OpenMetadataConfig openMetadataConfig) {
     try {
-      String region = Optional.ofNullable(openMetadataConfig.getSsm().getRegion()).orElse(REGION);
+      String regionStr = Optional.ofNullable(openMetadataConfig.getSsm().getRegion()).orElse(REGION);
       String serviceName = Optional.ofNullable(openMetadataConfig.getSsm().getServiceName()).orElse(SERVICE_NAME);
       String env = openMetadataConfig.getSsm().getEnvironment();
-      AWSSimpleSystemsManagement ssm = AWSSimpleSystemsManagementClientBuilder.standard().withRegion(region).build();
+      
+      Region region = Region.of(regionStr);
+      SsmClient ssmClient = SsmClient.builder()
+          .region(region)
+          .build();
 
-      String apiKey = getSsmParameter(ssm, serviceName, env, API_KEY);
+      String apiKey = getSsmParameter(ssmClient, serviceName, env, API_KEY);
       this.token = String.format("Bearer %s", apiKey);
-      String uriStr = "https://" + getSsmParameter(ssm, serviceName, env, OPEN_METADATA_URI);
+      String uriStr = "https://" + getSsmParameter(ssmClient, serviceName, env, OPEN_METADATA_URI);
       this.uri = new URIBuilder(uriStr).build();
 
     } catch (Exception e) {
       log.error("Failed to get data from SSM: {}", e.getMessage(), e);
     }
-
   }
 
-  private String getSsmParameter(AWSSimpleSystemsManagement ssm, String serviceName, String env, String parameterName) {
+  private String getSsmParameter(SsmClient ssmClient, String serviceName, String env, String parameterName) {
     try {
       String fullParameterName = "cred_" + serviceName + "_" + parameterName + "_" + env;
-      GetParametersResult parameters = ssm.getParameters(new GetParametersRequest().withNames(fullParameterName).withWithDecryption(true));
-      return parameters.getParameters().get(0).getValue();
+      
+      GetParametersRequest request = GetParametersRequest.builder()
+          .names(fullParameterName)
+          .withDecryption(true)
+          .build();
+      
+      GetParametersResponse response = ssmClient.getParameters(request);
+      
+      if (!response.parameters().isEmpty()) {
+        return response.parameters().get(0).value();
+      }
+      
+      return null;
     } catch (Exception e) {
-      log.error("Failed to get parameter from SSM: {}" + e.getMessage(), e);
+      log.error("Failed to get parameter from SSM: {}", e.getMessage(), e);
       return null;
     }
   }
