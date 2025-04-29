@@ -74,8 +74,8 @@ jobs:
           -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }} \
           deploy
       env:
-        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+        MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
         AUTO_RELEASE_AFTER_CLOSE: ${{ env.auto_release }}
     - name: Artifact Name
       if: ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }}
