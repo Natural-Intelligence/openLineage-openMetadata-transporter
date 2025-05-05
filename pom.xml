@@ -25,14 +25,15 @@
       <connection>scm:git:https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter.git</connection>
       <url>https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter.git</url>
       <developerConnection>scm:git:https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter.git</developerConnection>
-     <tag>1.38</tag>
-  </scm>
+      <tag>1.38</tag>
+   </scm>
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <maven.compiler.source>1.8</maven.compiler.source>
       <maven.compiler.target>1.8</maven.compiler.target>
       <jacksonVersion>2.13.5</jacksonVersion>
       <openLineageVersion>0.25.0</openLineageVersion>
+      <awssdkVersion>2.20.141</awssdkVersion>
    </properties>
    <dependencies>
       <dependency>
@@ -97,10 +98,27 @@
          <artifactId>byte-buddy-agent</artifactId>
          <version>1.14.4</version>
       </dependency>
+      <!-- AWS SDK v2 dependencies -->
       <dependency>
          <groupId>software.amazon.awssdk</groupId>
          <artifactId>ssm</artifactId>
-         <version>2.31.9</version>
+         <version>${awssdkVersion}</version>
+      </dependency>
+      <!-- Add core AWS SDK v2 dependencies to ensure they're available on EMR 6.11 -->
+      <dependency>
+         <groupId>software.amazon.awssdk</groupId>
+         <artifactId>aws-core</artifactId>
+         <version>${awssdkVersion}</version>
+      </dependency>
+      <dependency>
+         <groupId>software.amazon.awssdk</groupId>
+         <artifactId>auth</artifactId>
+         <version>${awssdkVersion}</version>
+      </dependency>
+      <dependency>
+         <groupId>software.amazon.awssdk</groupId>
+         <artifactId>regions</artifactId>
+         <version>${awssdkVersion}</version>
       </dependency>
    </dependencies>
    <build>
@@ -158,7 +176,7 @@
                         <includes>
                            <include>net.bytebuddy:byte-buddy</include>
                            <include>net.bytebuddy:byte-buddy-agent</include>
-                           <include>software.amazon.awssdk:ssm</include>
+                           <include>software.amazon.awssdk:*</include>
                         </includes>
                      </artifactSet>
                   </configuration>
@@ -193,33 +211,33 @@
          <id>ci-cd</id>
          <build>
             <plugins>
-                <plugin>
-                    <groupId>org.sonatype.plugins</groupId>
-                    <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>1.6.13</version>
-                    <extensions>true</extensions>
-                    <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://s01.oss.sonatype.org</nexusUrl>
-                    <autoReleaseAfterClose>${env.AUTO_RELEASE_AFTER_CLOSE}</autoReleaseAfterClose>
-                    </configuration>
-                </plugin>
+               <plugin>
+                  <groupId>org.sonatype.plugins</groupId>
+                  <artifactId>nexus-staging-maven-plugin</artifactId>
+                  <version>1.6.13</version>
+                  <extensions>true</extensions>
+                  <configuration>
+                     <serverId>ossrh</serverId>
+                     <nexusUrl>https://s01.oss.sonatype.org</nexusUrl>
+                     <autoReleaseAfterClose>${env.AUTO_RELEASE_AFTER_CLOSE}</autoReleaseAfterClose>
+                  </configuration>
+               </plugin>
                <plugin>
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-release-plugin</artifactId>
                   <version>2.5.3</version>
-                    <dependencies>
-                    <dependency>
+                  <dependencies>
+                     <dependency>
                         <groupId>org.apache.maven.scm</groupId>
                         <artifactId>maven-scm-provider-gitexe</artifactId>
                         <version>1.8.1</version>
-                    </dependency>
-                    <dependency>
+                     </dependency>
+                     <dependency>
                         <groupId>org.sonatype.plexus</groupId>
                         <artifactId>plexus-sec-dispatcher</artifactId>
                         <version>1.4</version>
-                    </dependency>
-                    </dependencies>
+                     </dependency>
+                  </dependencies>
                   <configuration>
                      <tagNameFormat>@{project.version}</tagNameFormat>
                   </configuration>
