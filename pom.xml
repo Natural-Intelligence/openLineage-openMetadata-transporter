@@ -120,6 +120,11 @@
          <artifactId>regions</artifactId>
          <version>${awssdkVersion}</version>
       </dependency>
+      <dependency>
+         <groupId>org.reactivestreams</groupId>
+         <artifactId>reactive-streams</artifactId>
+         <version>1.0.3</version>
+      </dependency>
    </dependencies>
    <build>
       <finalName>${project.groupId}:${project.artifactId}</finalName>
@@ -177,6 +182,7 @@
                            <include>net.bytebuddy:byte-buddy</include>
                            <include>net.bytebuddy:byte-buddy-agent</include>
                            <include>software.amazon.awssdk:*</include>
+                           <include>org.reactivestreams:reactive-streams</include>
                         </includes>
                      </artifactSet>
                   </configuration>
