@@ -71,8 +71,7 @@ jobs:
           -s settings.xml \
           -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} \
           -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
-          -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }} \
-          deploy
+          deploy # -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }} \
       env:
         MAVEN_USERNAME: ${{ secrets.MVN_TOKEN_USER }}
         MAVEN_PASSWORD: ${{ secrets.MVN_TOKEN_PASSWORD }}
