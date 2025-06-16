@@ -35,7 +35,7 @@ jobs:
         distribution: 'temurin'
         java-package: 'jdk'
         cache: 'maven'
-        server-id: ossrh
+        server-id: central
     - name: Configure Git User
       run: |
         git config user.email "devops@naturalint.com"
@@ -51,9 +51,9 @@ jobs:
       shell: bash
       run: |
         if [ "${{ github.event.inputs.releaseVersion }}" != "" ] && [ "${{ github.event.inputs.developmentVersion }}" != "" ]; then
-          echo "auto_release=true" >> $GITHUB_ENV
+          echo "auto_publish=true" >> $GITHUB_ENV
         else
-          echo "auto_release=false" >> $GITHUB_ENV
+          echo "auto_publish=false" >> $GITHUB_ENV
         fi
     - name: Build PR with Maven
       if: ${{ github.event.pull_request.merged == false }}
@@ -71,12 +71,11 @@ jobs:
           -s settings.xml \
           -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} \
           -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
-          -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }} \
-          deploy
+          deploy # -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }} \
       env:
-        MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}
-        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
-        AUTO_RELEASE_AFTER_CLOSE: ${{ env.auto_release }}
+        MAVEN_USERNAME: ${{ secrets.MVN_TOKEN_USER }}
+        MAVEN_PASSWORD: ${{ secrets.MVN_TOKEN_PASSWORD }}
+        AUTO_PUBLISH: ${{ env.auto_publish }}
     - name: Artifact Name
       if: ${{ github.event.pull_request.merged == true || github.event_name != 'pull_request' }}
       shell: bash
@@ -101,4 +100,4 @@ jobs:
       uses: peter-evans/repository-dispatch@v2
       with:
         event-type: release-notes
-        client-payload: '{"auto_release": "${{ env.auto_release }}", "artifact": "${{ env.artifact_name }}-${{ env.sha_short }}"}'
+        client-payload: '{"auto_publish": "${{ env.auto_publish }}", "artifact": "${{ env.artifact_name }}-${{ env.sha_short }}"}'
