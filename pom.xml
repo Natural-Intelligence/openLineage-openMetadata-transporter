@@ -5,7 +5,7 @@
    <groupId>io.github.natural-intelligence</groupId>
    <artifactId>openlineage-openmetadata-transporter</artifactId>
    <packaging>jar</packaging>
-   <version>1.42</version>
+   <version>1.43-SNAPSHOT</version>
    <name>${project.groupId}:${project.artifactId}</name>
    <url>https://github.com/Natural-Intelligence/openLineage-openMetadata-transporter</url>
    <licenses>
@@ -162,6 +162,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.11.0</version>
             <configuration>
                <source>8</source>
                <target>8</target>
@@ -170,6 +171,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
+            <version>3.4.1</version>
             <executions>
                <execution>
                   <phase>package</phase>
@@ -192,6 +194,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
+            <version>3.3.0</version>
             <configuration>
                <archive>
                   <manifestEntries>
@@ -274,6 +277,7 @@
                <plugin>
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-gpg-plugin</artifactId>
+                  <version>3.1.0</version>
                   <executions>
                      <execution>
                         <id>sign-artifacts</id>
