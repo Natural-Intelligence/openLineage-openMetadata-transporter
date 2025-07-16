@@ -39,12 +39,12 @@
       <dependency>
          <groupId>io.openlineage</groupId>
          <artifactId>openlineage-java</artifactId>
-         <version>${openLineageVersion}</version>
+         <version>1.6.2</version>
       </dependency>
       <dependency>
          <groupId>io.openlineage</groupId>
          <artifactId>openlineage-spark</artifactId>
-         <version>${openLineageVersion}</version>
+         <version>0.25.0</version>
       </dependency>
       <dependency>
          <groupId>org.projectlombok</groupId>
@@ -55,12 +55,12 @@
       <dependency>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-core</artifactId>
-         <version>${jacksonVersion}</version>
+         <version>2.13.5</version>
       </dependency>
       <dependency>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-databind</artifactId>
-         <version>${jacksonVersion}</version>
+         <version>2.13.5</version>
       </dependency>
       <dependency>
          <groupId>com.google.code.findbugs</groupId>
@@ -102,23 +102,23 @@
       <dependency>
          <groupId>software.amazon.awssdk</groupId>
          <artifactId>ssm</artifactId>
-         <version>${awssdkVersion}</version>
+         <version>2.21.11</version>
       </dependency>
       <!-- Add core AWS SDK v2 dependencies to ensure they're available on EMR 6.11 -->
       <dependency>
          <groupId>software.amazon.awssdk</groupId>
          <artifactId>aws-core</artifactId>
-         <version>${awssdkVersion}</version>
+         <version>2.20.141</version>
       </dependency>
       <dependency>
          <groupId>software.amazon.awssdk</groupId>
          <artifactId>auth</artifactId>
-         <version>${awssdkVersion}</version>
+         <version>2.20.141</version>
       </dependency>
       <dependency>
          <groupId>software.amazon.awssdk</groupId>
          <artifactId>regions</artifactId>
-         <version>${awssdkVersion}</version>
+         <version>2.20.141</version>
       </dependency>
       <dependency>
          <groupId>org.reactivestreams</groupId>
