@@ -1,0 +1,5 @@
+.idea/
+.vscode/
+dependency-reduced-pom.xml
+openlineage-openmetadata-transporter.iml
+target/
