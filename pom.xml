@@ -121,6 +121,11 @@
          <version>${awssdkVersion}</version>
       </dependency>
       <dependency>
+         <groupId>software.amazon.awssdk</groupId>
+         <artifactId>apache-client</artifactId>
+         <version>${awssdkVersion}</version>
+      </dependency>
+      <dependency>
          <groupId>org.reactivestreams</groupId>
          <artifactId>reactive-streams</artifactId>
          <version>1.0.3</version>

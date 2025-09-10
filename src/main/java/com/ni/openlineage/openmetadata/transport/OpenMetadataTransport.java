@@ -5,6 +5,7 @@ import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.GetParametersRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersResponse;
 import software.amazon.awssdk.services.ssm.model.Parameter;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openlineage.client.OpenLineage;
@@ -114,8 +115,11 @@ public final class OpenMetadataTransport extends Transport implements Closeable 
       String env = openMetadataConfig.getSsm().getEnvironment();
       
       Region region = Region.of(regionStr);
+      // Explicitly specify Apache HTTP client to avoid multiple HTTP implementations error
+      ApacheHttpClient.Builder httpClientBuilder = ApacheHttpClient.builder();
       SsmClient ssmClient = SsmClient.builder()
           .region(region)
+          .httpClientBuilder(httpClientBuilder)
           .build();
 
       String apiKey = getSsmParameter(ssmClient, serviceName, env, API_KEY);
